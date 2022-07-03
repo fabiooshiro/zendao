@@ -28,3 +28,33 @@ O que vamos ensinar?
 Solidity é a linguagem do Ethereum e várias blockchains a utilizam e seria um descabimento não ter na nossa empreitada.
 ### Rust
 Rust é a linguagem mais amada dos últimos anos, também utilizada por Solana, Polkadot e a agonizante Terra (Luna).
+
+# Como participar da ZenDAO?
+
+Você pode colaborar de várias formas, codando, ensinando, fazendo eventos, doando grana, votando, validando pessoas (blade runner), etc.
+## Codando
+
+Vamos criar a DAO e os cursos inicialmente nesse repo
+## Financeiramente
+
+Caso queira colaborar doando tokens, NFTs:
+### Solana
+Esse é o endereço da Solana: DqhfeJt69oGzGLmuKuJqRex3u3u9BeMM8aFqePKQTDch  
+Audite as transações da nossa conta em:
+* [Solana Beach](https://solanabeach.io/address/DqhfeJt69oGzGLmuKuJqRex3u3u9BeMM8aFqePKQTDch)
+* [Solana Explorer](https://explorer.solana.com/address/DqhfeJt69oGzGLmuKuJqRex3u3u9BeMM8aFqePKQTDch)
+
+## Votando
+
+O ideal é que alterações de contrato, vulgo código, e mais especificamente as PRs fossem aprovadas via blockchain, por enquanto vamos usar o github.  
+
+O mecanismo de gestão do orçamento da DAO será construido aqui.
+Eu pessoalmente não gostaria que todo mundo que votasse tivesse que ter milhões investidos nesse projeto, porém algum valor para demonstrar compromisso e inibir bots.
+As pessoas que votam devem ser seres humanos de verdade e como o processo de validar as pessoas é custoso, pensei em fazer isso em duas partes, a primeira, como dito anteriormente é para evitar bots.
+
+Para ser um votante:
+
+1. Compre o token ZenDAO (evita bots e o processo é todo automatizado) e   
+Responda perguntas do nosso bot anti bot
+2. Peça para alguém dentro da ZenDAO que valide o seu usuário (blade runner) validação humana
+
