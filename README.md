@@ -17,5 +17,14 @@ A blockchain com o seu incrível poder de descentralização inicialmente começ
 
 Como a vida é curta precisamos de algo prático para começar, mas que ao mesmo tempo faça sentido no futuro. No meu exercício de futurologia a demanda por tecnologia vai crescer cada vez mais. Já explico.  
 O termo smart contract, a pesar de ser praticamente um programa escrito para rodar na blockchain, tem no seu nome algo peculiar, um direcionamento, uma visão. Imagina um mundo onde vale o que está escrito! Imagina que vc assina um contrato e não tem como violar o contrato, vc não precisaria mais do judiciário!!!  
-Acima do bem e do mal como diria o meu professor Manuel Martins estão os algoritmos e se a demanda por juizes vai cair a demanda por desenvolvedores vai aumentar, talvez surja uma nova profissão "advogado de smart contract".
-E é sobre essa visão de demanda que se trata a proposta desse MVP. Vamos criar uma DAO para ensinar as pessoas a escreverem a nova base de contratos e quem sabe uma constituição inviolável.
+Acima do bem e do mal como diria o meu professor Manuel Martins estão os algoritmos e se a demanda por juizes vai cair a demanda por desenvolvedores vai aumentar, talvez surja uma nova profissão "advogado de smart contract".  
+E é sobre essa visão de demanda que se trata a proposta desse MVP. Vamos criar uma DAO para ensinar as pessoas a escreverem a nova base de contratos e quem sabe no futuro um dos nossos alunos escreva uma constituição inviolável.
+
+## Tecnologia
+
+O que vamos ensinar?
+
+### Solidity
+Solidity é a linguagem do Ethereum e várias blockchains a utilizam e seria um descabimento não ter na nossa empreitada.
+### Rust
+Rust é a linguagem mais amada dos últimos anos, também utilizada por Solana, Polkadot e a agonizante Terra (Luna).
