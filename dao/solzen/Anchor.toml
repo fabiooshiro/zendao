@@ -1,7 +1,7 @@
 [features]
 seeds = false
 [programs.localnet]
-solzen = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+solzen = "2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv"
 
 [registry]
 url = "https://anchor.projectserum.com"
