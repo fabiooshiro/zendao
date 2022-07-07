@@ -34,7 +34,10 @@ Rust é a linguagem mais amada dos últimos anos, também utilizada por Solana, 
 Você pode colaborar de várias formas, codando, ensinando, fazendo eventos, doando grana, votando, validando pessoas (blade runner), etc.
 ## Codando
 
-Vamos criar a DAO e os cursos inicialmente nesse repo
+Vamos criar a DAO e os cursos inicialmente nesse repo  
+
+[DAO CODE](dao/solzen/README.md)
+
 ## Financeiramente
 
 Caso queira colaborar doando tokens, NFTs:
