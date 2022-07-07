@@ -1,0 +1,33 @@
+use anchor_lang::prelude::*;
+
+const DISCRIMINATOR_LENGTH: usize = 8;
+const PUBLIC_KEY_LENGTH: usize = 32;
+const TIMESTAMP_LENGTH: usize = 8;
+const U64_LENGTH: usize = 8;
+
+#[account]
+pub struct MyDAO {
+    pub token: Pubkey,
+    pub min_balance: u64,
+}
+
+impl MyDAO {
+    pub const LEN: usize = DISCRIMINATOR_LENGTH
+        + PUBLIC_KEY_LENGTH
+        + U64_LENGTH;
+}
+
+#[account]
+pub struct Validation {
+    pub parent: Pubkey,
+    pub child: Pubkey,
+    pub timestamp: i64,
+}
+
+impl Validation {
+    pub const LEN: usize = DISCRIMINATOR_LENGTH
+        + PUBLIC_KEY_LENGTH // parent.
+        + PUBLIC_KEY_LENGTH // child.
+        + TIMESTAMP_LENGTH; // timestamp.
+}
+
