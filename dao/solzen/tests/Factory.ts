@@ -50,6 +50,7 @@ export default class Factory {
                 zendao: daoPubkey
             })
             .rpc()
+
         return { daoPubkey, mint, payer, mintAuthority }
     }
 }
