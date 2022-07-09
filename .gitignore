@@ -1,0 +1,5 @@
+node_modules
+.parcel-cache
+/dao/front-app/dist
+.DS_Store
+.dccache

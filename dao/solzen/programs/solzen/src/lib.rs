@@ -32,7 +32,6 @@ pub mod solzen {
         let founder: &Signer = &ctx.accounts.founder;
         dao.token = token;
         dao.min_balance = min_balance;
-        dao.founder = *founder.key;
         let validation = &mut ctx.accounts.validation;
         validation.child = *founder.key;
         let clock: Clock = Clock::get().unwrap();

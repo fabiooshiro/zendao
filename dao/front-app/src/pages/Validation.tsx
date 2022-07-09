@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as anchor from "@project-serum/anchor";
-import { AnchorProvider } from "@project-serum/anchor";
+import { AnchorProvider, Program } from "@project-serum/anchor";
 import idl from '../models/solzen.json';
 import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { Solzen } from '../models/solzen';
 
 const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: PublicKey = new PublicKey(
     'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
@@ -54,23 +55,27 @@ export function Validation({ }: ValidationProps) {
     async function getProgram() {
         const provider = await getProvider()
         anchor.setProvider(provider);
-        return new anchor.Program(idl as any, programID, provider);
+        return new anchor.Program(idl as any, programID, provider) as Program<Solzen>;
     }
 
     async function showUserStatus() {
         if (!publicKey) {
             return;
         }
-        const program = await getProgram();
-        const child = new PublicKey(publicKey)
-        const [userAccount, _bump] = findProgramAddressSync([
-            encoder.encode('child'),
-            child.toBuffer()
-        ], program.programId);
-        const valAcc = await program.account.validation.fetch(userAccount)
-        console.log(valAcc)
-        if (valAcc) {
-            setParent(valAcc.parent.toBase58())
+        try {
+            const program = await getProgram();
+            const child = new PublicKey(publicKey)
+            const [userAccount, _bump] = findProgramAddressSync([
+                encoder.encode('child'),
+                child.toBuffer()
+            ], program.programId);
+            const valAcc = await program.account.validation.fetch(userAccount)
+            console.log(valAcc)
+            if (valAcc) {
+                setParent(valAcc.parent.toBase58())
+            }
+        } catch (e) {
+            console.log(`Usuario ${publicKey} sem validacao`, e)
         }
     }
 
@@ -91,6 +96,10 @@ export function Validation({ }: ValidationProps) {
     }
 
     async function validate() {
+        if (!wallet?.publicKey) {
+            console.log('Wallet ou chave publica faltando')
+            return;
+        }
         if (!publicKey) {
             console.log('Chave publica nao informada')
             return;
@@ -100,18 +109,23 @@ export function Validation({ }: ValidationProps) {
         const [userAccount, _bump] = findProgramAddressSync([
             encoder.encode('child'),
             child.toBuffer()
-        ], program.programId);
-        console.log({ userAccount: userAccount.toBase58() })
+        ], program.programId)
+        console.log({ userAccount: userAccount.toBase58(), wallet: wallet.publicKey.toBase58() })
         const tokenAccount = await findAssociatedTokenAddress(
             child,
             mint,
         )
+        const [parentValidation, _] = findProgramAddressSync([
+            new TextEncoder().encode('child'),
+            wallet.publicKey.toBuffer(),
+        ], program.programId)
         const tx = await program.methods
             .validateHuman(child)
             .accounts({
                 validation: userAccount,
                 tokenAccount: tokenAccount,
-                zendao: daoPubkey
+                zendao: daoPubkey,
+                parentValidation,
             })
             .rpc()
     }

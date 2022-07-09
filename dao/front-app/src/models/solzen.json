@@ -11,6 +11,11 @@
           "isSigner": false
         },
         {
+          "name": "validation",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "founder",
           "isMut": true,
           "isSigner": true
@@ -42,6 +47,11 @@
         },
         {
           "name": "tokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "parentValidation",
           "isMut": false,
           "isSigner": false
         },
@@ -122,6 +132,11 @@
       "code": 6002,
       "name": "WrongOwner",
       "msg": "Wrong owner"
+    },
+    {
+      "code": 6003,
+      "name": "WrongParentValidation",
+      "msg": "Wrong parent validation"
     }
   ],
   "metadata": {
