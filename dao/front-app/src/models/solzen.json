@@ -38,6 +38,32 @@
       ]
     },
     {
+      "name": "validateTelegramUser",
+      "accounts": [
+        {
+          "name": "telegramUser",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "validateHuman",
       "accounts": [
         {
@@ -112,6 +138,22 @@
           {
             "name": "timestamp",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TelegramUser",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "id",
+            "type": "u64"
           }
         ]
       }

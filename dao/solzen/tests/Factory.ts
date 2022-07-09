@@ -28,18 +28,18 @@ export default class Factory {
             freezeAuthority.publicKey,
             9 // We are using 9 to match the CLI decimal default exactly
         );
-        return { mint, payer, mintAuthority }
+        return { mint, payer, mintAuthority, connection }
     }
 
-    static programPaidBy(payer: anchor.web3.Keypair): anchor.Program {
+    static programPaidBy(payer: anchor.web3.Keypair): anchor.Program<Solzen> {
         const provider = anchor.AnchorProvider.env()
         const newProvider = new AnchorProvider(provider.connection, new anchor.Wallet(payer), {});
-        const program = anchor.workspace.Solzen as Program<Solzen>;
-        return new anchor.Program(program.idl as anchor.Idl, program.programId, newProvider)
+        const program = anchor.workspace.Solzen;
+        return new anchor.Program(program.idl as anchor.Idl, program.programId, newProvider) as Program<Solzen>
     }
 
     static async createDAO() {
-        const { mint, payer, mintAuthority } = await Factory.createMint();
+        const { mint, payer, mintAuthority, connection } = await Factory.createMint();
         const program = await Factory.programPaidBy(payer);
 
         const [daoPubkey, _bump] = findProgramAddressSync([
@@ -48,9 +48,9 @@ export default class Factory {
         ], program.programId);
 
         const [userAccount, _bump2] = findProgramAddressSync([
-			anchor.utils.bytes.utf8.encode('child'),
-			payer.publicKey.toBuffer()
-		], program.programId);
+            anchor.utils.bytes.utf8.encode('child'),
+            payer.publicKey.toBuffer()
+        ], program.programId);
 
         const tx = await program.methods
             .initialize(mint, new anchor.BN(10))
@@ -60,6 +60,6 @@ export default class Factory {
             })
             .rpc()
         console.log("DAO foundation transaction", tx)
-        return { daoPubkey, mint, payer, mintAuthority }
+        return { daoPubkey, mint, payer, mintAuthority, connection }
     }
 }

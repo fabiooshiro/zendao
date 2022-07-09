@@ -4,6 +4,7 @@ const DISCRIMINATOR_LENGTH: usize = 8;
 const PUBLIC_KEY_LENGTH: usize = 32;
 const TIMESTAMP_LENGTH: usize = 8;
 const U64_LENGTH: usize = 8;
+const I64_LENGTH: usize = 8;
 
 #[account]
 pub struct Zendao {
@@ -12,9 +13,7 @@ pub struct Zendao {
 }
 
 impl Zendao {
-    pub const LEN: usize = DISCRIMINATOR_LENGTH
-        + PUBLIC_KEY_LENGTH
-        + U64_LENGTH;
+    pub const LEN: usize = DISCRIMINATOR_LENGTH + PUBLIC_KEY_LENGTH + U64_LENGTH;
 }
 
 #[account]
@@ -31,3 +30,12 @@ impl Validation {
         + TIMESTAMP_LENGTH; // timestamp.
 }
 
+#[account]
+pub struct TelegramUser {
+    pub pubkey: Pubkey,
+    pub id: u64,
+}
+
+impl TelegramUser {
+    pub const LEN: usize = DISCRIMINATOR_LENGTH + PUBLIC_KEY_LENGTH + I64_LENGTH;
+}

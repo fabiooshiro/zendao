@@ -26,7 +26,7 @@ export const App: FC = () => {
                         <WalletMultiButton style={{ marginTop: "4px" }} />
                         <Routes>
                             <Route path='/' element={<Landing />} />
-                            <Route path='/validation/:publicKey' element={<Validation />} />
+                            <Route path='/validation/:mint' element={<Validation />} />
                         </Routes>
                     </Container>
                 </Router>

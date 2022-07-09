@@ -39,10 +39,19 @@ pub mod solzen {
         Ok(())
     }
 
+    pub fn validate_telegram_user(ctx: Context<ValidateTelegramUser>, id: u64) -> Result<()> {
+        let telegram_user = &mut ctx.accounts.telegram_user;
+        telegram_user.pubkey = *ctx.accounts.signer.key;
+        msg!("telegram id = {:?}", id);
+        telegram_user.id = id;
+        Ok(())
+    }
+
     pub fn validate_human(ctx: Context<ValidateHuman>, child: Pubkey) -> Result<()> {
         let token_account = &ctx.accounts.token_account;
         let zendao = &ctx.accounts.zendao;
         if token_account.mint.key().to_string() != zendao.token.key().to_string() {
+            msg!("wrong mint {:?} should be {:?}", token_account.mint.key(), zendao.token.key());
             return Err(error!(MyError::WrongToken));
         }
         let parent: &Signer = &ctx.accounts.parent;
@@ -112,6 +121,20 @@ pub struct ValidateHuman<'info> {
 
     #[account(mut)]
     pub parent: Signer<'info>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(id: u64)]
+pub struct ValidateTelegramUser<'info> {
+    #[account(init, payer = signer, space = models::TelegramUser::LEN,
+        seeds = [b"telegram_user".as_ref(), &id.to_le_bytes()], bump)]
+    pub telegram_user: Account<'info, models::TelegramUser>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
 
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,

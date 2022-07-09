@@ -29,23 +29,29 @@ async function findAssociatedTokenAddress(
 const programID = new PublicKey(idl.metadata.address);
 
 const commitment = 'processed'
-// const network = "http://127.0.0.1:8899";
-const network = clusterApiUrl('devnet')
-const connection = new Connection(network, commitment);
+const url = new URL(window.location.href)
+const network = clusterApiUrl(url.searchParams.get('cluster') as any || 'mainnet-beta')
+const publicKey = url.searchParams.get('child')
+const connection = new Connection(network, commitment)
 
 type ValidationProps = {
 }
+
 export function Validation({ }: ValidationProps) {
-    const { publicKey } = useParams()
+    const { mint: mintStr } = useParams()
+    if (!mintStr) {
+        return <div>Informe o token</div>
+    }
     const [parent, setParent] = useState('')
-    const wallet = useWallet();
+    const [childBalance, setChildBalance] = useState('')
+    const wallet = useWallet()
 
     async function getProvider() {
         const provider = new AnchorProvider(connection, wallet as any, { commitment });
         return provider;
     }
 
-    const mint = new PublicKey("CasshNb6PacBzSwbd5gw8uqoQEjcWxaQ9u9byFApShwT");
+    const mint = new PublicKey(mintStr)//"CasshNb6PacBzSwbd5gw8uqoQEjcWxaQ9u9byFApShwT");
     const encoder = new TextEncoder()
     const [daoPubkey, _bump] = findProgramAddressSync([
         encoder.encode('dao'),
@@ -56,6 +62,19 @@ export function Validation({ }: ValidationProps) {
         const provider = await getProvider()
         anchor.setProvider(provider);
         return new anchor.Program(idl as any, programID, provider) as Program<Solzen>;
+    }
+
+    async function showUserBalance() {
+        if (!publicKey) {
+            return;
+        }
+        const child = new PublicKey(publicKey)
+        const tokenAddress = await findAssociatedTokenAddress(child, mint)
+        const balance = await connection.getTokenAccountBalance(tokenAddress)
+        const decimals = new anchor.BN(balance.value.decimals)
+        const division = new anchor.BN(10).pow(decimals)
+        const bnBalance = new anchor.BN(balance.value.amount).divRound(division)
+        setChildBalance(bnBalance.toString())
     }
 
     async function showUserStatus() {
@@ -81,6 +100,7 @@ export function Validation({ }: ValidationProps) {
 
     useEffect(() => {
         showUserStatus()
+        showUserBalance()
     }, [publicKey])
 
     async function initialize() {
@@ -139,6 +159,7 @@ export function Validation({ }: ValidationProps) {
         ) : (
             <div>Validando: {publicKey}</div>
         )}
+        <div>Saldo: {childBalance}</div>
         <button
             onClick={validate}
         >Validar</button>
