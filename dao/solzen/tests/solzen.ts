@@ -19,22 +19,30 @@ describe("solzen", () => {
 	const connection = provider.connection
 
 	it("should initialize the DAO", async () => {
-		const { mint } = await Factory.createMint();
+		const { mint, payer } = await Factory.createMint();
 
+		const program = await Factory.programPaidBy(payer)
 		const [daoPubkey, _bump] = findProgramAddressSync([
 			anchor.utils.bytes.utf8.encode('dao'),
 			mint.toBuffer()
 		], program.programId);
 
+		const [userAccount, _bump2] = findProgramAddressSync([
+			anchor.utils.bytes.utf8.encode('child'),
+			payer.publicKey.toBuffer()
+		], program.programId);
+		
 		const tx = await program.methods
 			.initialize(mint, new anchor.BN(1))
 			.accounts({
-				zendao: daoPubkey
+				zendao: daoPubkey,
+				validation: userAccount,
 			})
 			.rpc()
 		console.log("Your transaction signature", tx);
 		const daoAcc = await program.account.zendao.fetch(daoPubkey)
 		expect(daoAcc.token.toBase58()).to.eq(mint.toBase58())
+		expect(daoAcc.founder.toBase58()).to.eq(payer.publicKey.toBase58())
 	})
 
 	it("should validate an user as human", async () => {
@@ -57,9 +65,16 @@ describe("solzen", () => {
 			10
 		)
 
+		const program = await Factory.programPaidBy(payer)
+
 		const [userAccount, _bump] = findProgramAddressSync([
 			anchor.utils.bytes.utf8.encode('child'),
 			child.publicKey.toBuffer()
+		], program.programId);
+
+		const [parentValidation, _bump2] = findProgramAddressSync([
+			anchor.utils.bytes.utf8.encode('child'),
+			payer.publicKey.toBuffer()
 		], program.programId);
 
 		const tx = await program.methods
@@ -67,17 +82,15 @@ describe("solzen", () => {
 			.accounts({
 				validation: userAccount,
 				tokenAccount: tokenAccount.address,
-				zendao: daoPubkey
+				zendao: daoPubkey,
+				parentValidation
 			})
 			.rpc()
 
 		console.log("Your transaction signature", tx);
 
-		const validationAccount = await program.account.validation.all();
-		expect(validationAccount.length).eq(1)
-
 		const valAcc = await program.account.validation.fetch(userAccount)
-		expect(valAcc.parent.toBase58()).to.eq(provider.wallet.publicKey.toBase58())
+		expect(valAcc.parent.toBase58()).to.eq(payer.publicKey.toBase58())
 		expect(valAcc.child.toBase58()).to.eq(child.publicKey.toBase58())
 	});
 
@@ -97,13 +110,19 @@ describe("solzen", () => {
 			child.publicKey
 		)
 
+		const [parentValidation, _bump2] = findProgramAddressSync([
+			anchor.utils.bytes.utf8.encode('child'),
+			payer.publicKey.toBuffer()
+		], program.programId);
+
 		const error = await program.methods
 			.validateHuman(child.publicKey)
 			.accounts({
 				validation: userAccount,
 				parent: wrongSigner.publicKey,
 				tokenAccount: tokenAccount.address,
-				zendao: daoPubkey
+				zendao: daoPubkey,
+				parentValidation
 			})
 			.rpc()
 			.catch(e => e)
@@ -114,6 +133,7 @@ describe("solzen", () => {
 	it("should validate only 1x", async () => {
 		const { mint, payer, mintAuthority, daoPubkey } = await Factory.createDAO()
 		const child = anchor.web3.Keypair.generate()
+		const program = await Factory.programPaidBy(payer)
 		const [userAccount, _bump] = findProgramAddressSync([
 			anchor.utils.bytes.utf8.encode('child'),
 			child.publicKey.toBuffer()
@@ -136,12 +156,18 @@ describe("solzen", () => {
 			10
 		)
 
+		const [parentValidation, _bump2] = findProgramAddressSync([
+			anchor.utils.bytes.utf8.encode('child'),
+			payer.publicKey.toBuffer()
+		], program.programId);
+
 		const tx = await program.methods
 			.validateHuman(child.publicKey)
 			.accounts({
 				validation: userAccount,
 				tokenAccount: tokenAccount.address,
-				zendao: daoPubkey
+				zendao: daoPubkey,
+				parentValidation
 			})
 			.rpc()
 
@@ -154,7 +180,8 @@ describe("solzen", () => {
 			.accounts({
 				validation: userAccount,
 				tokenAccount: tokenAccount.address,
-				zendao: daoPubkey
+				zendao: daoPubkey,
+				parentValidation
 			})
 			.rpc().catch(e => e)
 
@@ -163,7 +190,7 @@ describe("solzen", () => {
 
 	xdescribe('eating glass', () => {
 		it("should dig a way to decode ZenDAO", async () => {
-			const { mint } = await Factory.createMint();
+			const { mint, payer } = await Factory.createMint();
 
 			const [daoPubkey, _bump] = findProgramAddressSync([
 				anchor.utils.bytes.utf8.encode('dao'),

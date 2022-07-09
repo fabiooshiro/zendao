@@ -18,6 +18,9 @@ pub enum MyError {
 
     #[msg("Wrong owner")]
     WrongOwner,
+
+    #[msg("Wrong parent validation")]
+    WrongParentValidation,
 }
 
 #[program]
@@ -26,8 +29,14 @@ pub mod solzen {
 
     pub fn initialize(ctx: Context<InitDAO>, token: Pubkey, min_balance: u64) -> Result<()> {
         let dao = &mut ctx.accounts.zendao;
+        let founder: &Signer = &ctx.accounts.founder;
         dao.token = token;
         dao.min_balance = min_balance;
+        dao.founder = *founder.key;
+        let validation = &mut ctx.accounts.validation;
+        validation.child = *founder.key;
+        let clock: Clock = Clock::get().unwrap();
+        validation.timestamp = clock.unix_timestamp;
         Ok(())
     }
 
@@ -37,7 +46,19 @@ pub mod solzen {
         if token_account.mint.key().to_string() != zendao.token.key().to_string() {
             return Err(error!(MyError::WrongToken));
         }
-        msg!("amount = {:?} min_balance = {:?}", &token_account.amount, zendao.min_balance);
+        let parent: &Signer = &ctx.accounts.parent;
+        msg!(
+            "amount = {:?} min_balance = {:?}",
+            &token_account.amount,
+            zendao.min_balance
+        );
+        msg!("parent = {:?}", parent.key);
+        let parent_validation = &ctx.accounts.parent_validation;
+        msg!("parent as child = {:?}", parent_validation.child);
+        if parent_validation.child.to_string() != *parent.key.to_string() {
+            return Err(error!(MyError::WrongParentValidation));
+        }
+
         if token_account.amount < zendao.min_balance {
             return Err(error!(MyError::InsuficientAmount));
         }
@@ -45,9 +66,9 @@ pub mod solzen {
         if token_account.owner != child {
             return Err(error!(MyError::WrongOwner));
         }
-        
+
         let validation: &mut Account<models::Validation> = &mut ctx.accounts.validation;
-        let parent: &Signer = &ctx.accounts.parent;
+
         validation.parent = *parent.key;
         validation.child = child;
         let clock: Clock = Clock::get().unwrap();
@@ -62,6 +83,10 @@ pub struct InitDAO<'info> {
     #[account(init, payer = founder, space = models::Zendao::LEN,
         seeds = [b"dao".as_ref(), token.as_ref()], bump)]
     pub zendao: Account<'info, models::Zendao>,
+
+    #[account(init, payer = founder, space = models::Validation::LEN,
+        seeds = [b"child".as_ref(), founder.key.as_ref()], bump)]
+    pub validation: Account<'info, models::Validation>,
 
     #[account(mut)]
     pub founder: Signer<'info>,
@@ -79,6 +104,9 @@ pub struct ValidateHuman<'info> {
 
     #[account()]
     pub token_account: Account<'info, TokenAccount>,
+
+    #[account()]
+    pub parent_validation: Account<'info, models::Validation>,
 
     #[account()]
     pub zendao: Account<'info, models::Zendao>,

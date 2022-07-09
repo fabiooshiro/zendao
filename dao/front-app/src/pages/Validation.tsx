@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import * as anchor from "@project-serum/anchor";
+import { AnchorProvider } from "@project-serum/anchor";
 import idl from '../models/solzen.json';
 import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -39,13 +40,14 @@ export function Validation({ }: ValidationProps) {
     const wallet = useWallet();
 
     async function getProvider() {
-        const provider = new anchor.AnchorProvider(connection, wallet as any, { commitment });
+        const provider = new AnchorProvider(connection, wallet as any, { commitment });
         return provider;
     }
 
     const mint = new PublicKey("CasshNb6PacBzSwbd5gw8uqoQEjcWxaQ9u9byFApShwT");
+    const encoder = new TextEncoder()
     const [daoPubkey, _bump] = findProgramAddressSync([
-        anchor.utils.bytes.utf8.encode('dao'),
+        encoder.encode('dao'),
         mint.toBuffer()
     ], programID);
 
@@ -62,7 +64,7 @@ export function Validation({ }: ValidationProps) {
         const program = await getProgram();
         const child = new PublicKey(publicKey)
         const [userAccount, _bump] = findProgramAddressSync([
-            anchor.utils.bytes.utf8.encode('child'),
+            encoder.encode('child'),
             child.toBuffer()
         ], program.programId);
         const valAcc = await program.account.validation.fetch(userAccount)
@@ -96,7 +98,7 @@ export function Validation({ }: ValidationProps) {
         const program = await getProgram();
         const child = new PublicKey(publicKey)
         const [userAccount, _bump] = findProgramAddressSync([
-            anchor.utils.bytes.utf8.encode('child'),
+            encoder.encode('child'),
             child.toBuffer()
         ], program.programId);
         console.log({ userAccount: userAccount.toBase58() })

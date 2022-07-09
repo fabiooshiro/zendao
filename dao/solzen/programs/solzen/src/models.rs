@@ -8,11 +8,13 @@ const U64_LENGTH: usize = 8;
 #[account]
 pub struct Zendao {
     pub token: Pubkey,
+    pub founder: Pubkey,
     pub min_balance: u64,
 }
 
 impl Zendao {
     pub const LEN: usize = DISCRIMINATOR_LENGTH
+        + PUBLIC_KEY_LENGTH
         + PUBLIC_KEY_LENGTH
         + U64_LENGTH;
 }

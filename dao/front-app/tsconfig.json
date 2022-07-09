@@ -4,8 +4,7 @@
     "compilerOptions": {
         "noImplicitAny": false,
         "noEmit": true,
-        "target": "esnext",
-        "module": "esnext",
+        "target": "es6",
         "moduleResolution": "node",
         "jsx": "react",
         "strict": true,
