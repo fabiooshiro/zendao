@@ -10,3 +10,8 @@ Para ver os logs do rust
 tail -F .anchor/program-logs/2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv.solzen.log
 ``` 
 
+## TODO
+
+[x] Criar a DAO especificando o token  
+[x] Criar a validação humana no back  
+[-] Criar a validação humana no front  

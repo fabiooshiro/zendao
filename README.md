@@ -61,3 +61,10 @@ Para ser um votante:
 Responda perguntas do nosso bot anti bot
 2. Peça para alguém dentro da ZenDAO que valide o seu usuário (blade runner) validação humana
 
+### Desembolso
+
+A DAO possui um valor dentro da `treasure`.
+
+Qualquer pessoa pode fazer um pedido para ser pago em uma wallet, vulgo chave pública.
+Os pedidos são votados e caso a maioria % configurada vença e haja dinheiro suficiente dentro da `treasure` o valor solicitado é pago.
+
