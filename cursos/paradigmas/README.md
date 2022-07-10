@@ -9,7 +9,7 @@ Alto nível, muito melhor do que assembler. GOTO é/era terrível de se seguir e
 
 ## P.O.O.
 
-Os programas ou suas partes ainda assim eram difíceis de serem reutilizados e evoluídos no paradigma estruturado. As variáveis eram muitas vezes `globais`/`públicas` e ficava complexo debugar e entender qual parte do código alterou alguma variável que começou a quebrar o sistema.
+Ainda assim os programas, ou suas partes, eram difíceis de serem reutilizados e evoluídos no paradigma estruturado. As variáveis eram muitas vezes `globais`/`públicas` e ficava complexo debugar e entender qual parte do código alterou alguma variável que começou a quebrar o sistema. [Assista, sério](https://youtu.be/rDqQcmVqAm4?t=3575)
 
 Abstração, herança  
 Encapsulamento  
