@@ -43,6 +43,8 @@ export function Validation({ }: ValidationProps) {
     const [parent, setParent] = useState('')
     const [childBalance, setChildBalance] = useState('')
     const [minBalance, setMinBalance] = useState('')
+    const [daoOwner, setDaoOwner] = useState(false)
+    const [daoExist, setExist] = useState(true)
     const wallet = useWallet()
 
     async function getProvider() {
@@ -68,6 +70,7 @@ export function Validation({ }: ValidationProps) {
             setMinBalance(daoData.minBalance.toString())
         } catch (e) {
             console.log(`Erro ao carregar os dados da DAO`, e)
+            setExist(false)
         }
     }
 
@@ -196,19 +199,23 @@ export function Validation({ }: ValidationProps) {
             <div>Validando: {publicKey}</div>
         )}
         <div>Saldo: {childBalance}</div>
-        <div>Valor mínimo, na menor unidade, para participar das votações: {minBalance}</div>
+        <div>Valor mínimo, na menor unidade, estilo <a href="https://bitflyer.com/en-eu/s/glossary/satoshi">Satoshis</a>, para participar das votações: {minBalance}</div>
         <button
             onClick={validate}
         >Validar</button>
 
-        <button
-            onClick={closeDAO}
-        >Fechar a DAO</button>
+        {daoOwner ? (
+            <button
+                onClick={closeDAO}
+            >Fechar a DAO</button>
+        ) : null}
 
-        <button
-            onClick={initializeDAO}
-        >
-            Iniciar a DAO
-        </button>
+        {!daoExist ? (
+            <button
+                onClick={initializeDAO}
+            >
+                Iniciar a DAO
+            </button>
+        ) : null}
     </div>)
 }
