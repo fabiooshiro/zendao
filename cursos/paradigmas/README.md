@@ -9,11 +9,11 @@ Alto nível, muito melhor do que assembler. GOTO é/era terrível de se seguir e
 
 ## P.O.O.
 
-Ainda assim os programas, ou suas partes, eram difíceis de serem reutilizados e evoluídos no paradigma estruturado. As variáveis eram muitas vezes `globais`/`públicas` e ficava complexo debugar e entender qual parte do código alterou alguma variável que começou a quebrar o sistema. [Assista, sério](https://youtu.be/rDqQcmVqAm4?t=3575)
+Ainda assim os programas, ou suas partes, eram difíceis de serem reutilizados e evoluídos no paradigma estruturado. As variáveis eram muitas vezes `globais`/`públicas` e ficava complexo debugar e entender qual parte do código alterou alguma variável que começou a quebrar o sistema. [Assista esse vídeo, é sério!](https://youtu.be/rDqQcmVqAm4?t=3575)
 
-Abstração, herança  
-Encapsulamento  
-Polimorfismo  
+* Herança... composição  
+* Encapsulamento  
+* Polimorfismo  
 
 ### Generics &lt;T&gt;
 
@@ -24,8 +24,9 @@ ArrayList array = new ArrayList();
 array.add("primeiro valor");
 String firstValue = (String) array.get(0);
 ```
-O (String) é a operação de cast, velhos tempos.
+O (String) é a operação de cast, velhos tempos.  
 
+Daria também para especializar um array list.
 ```Java
 class StringArray extends ArrayList {
     public void add(String item) {
@@ -44,12 +45,13 @@ array.add("primeiro valor");
 String firstValue = array.get(0);
 ```
 
-Imagina o corno-job de ter que criar uma classe CarMap, BikeMap, BallMap, etc.  
+Imagina o corno-job de ter que criar uma classe CarArray, BikeArray, BallArray, etc.  
 Então tiveram a brilhante idéia de inventar os generics, que nada mais é do que colocar o tipo dinamicamente. Você encontra isso em várias outras linguagens como TypeScript.
 
 ```ts
-let dictionary = new Map<string, string>();
-dictionary.set("hi", "oi");
+ArrayList<String> array = new ArrayList<String>();
+array.add("first value zero index");
+String firstValue = array.get(0);
 ```
 
 É ótimo poder ter um &lt;TipoDinamico&gt;
@@ -106,7 +108,7 @@ Nas operações comuns entre vários objetos, com os mesmos métodos, até daria
 
 Arroba é só pra transação? Claro que não.
 
-## Funcional () =>
+## Funcional f(x) = ax + b
 
 A orientação a objetos ficou complexa, e se a gente usasse alguns conceitos da matemática e de quebra fizesse algo mais simples?  
 Lembro do Andre Kelmanson falando dos [POJOs](https://pt.wikipedia.org/wiki/Plain_Old_Java_Objects) que na real são as velhas estruturas, sem os métodos, que transitam entre as camadas do sistema. Essas camadas de sistema são normalmente stateless, ou seja, não possuem os atributos, só a lógica.  
