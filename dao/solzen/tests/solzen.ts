@@ -1,12 +1,9 @@
 import * as anchor from "@project-serum/anchor";
-import { BorshAccountsCoder, Program } from "@project-serum/anchor";
-import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
+import { BorshAccountsCoder } from "@project-serum/anchor";
 import { getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { expect } from "chai";
-import { Solzen } from "../target/types/solzen";
 import Factory from "./Factory";
-const util = require('util')
 
 describe("solzen", () => {
 
@@ -15,14 +12,15 @@ describe("solzen", () => {
 			const { mint, payer } = await Factory.createMint();
 
 			const program = await Factory.programPaidBy(payer)
-			const [daoPubkey, _bump] = findProgramAddressSync([
+			const [daoPubkey, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('dao'),
 				mint.toBuffer()
 			], program.programId);
 
-			const [userAccount, _bump2] = findProgramAddressSync([
+			const [userAccount, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				payer.publicKey.toBuffer()
+				payer.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
 			const tx = await program.methods
@@ -36,6 +34,22 @@ describe("solzen", () => {
 			const daoAcc = await program.account.zendao.fetch(daoPubkey)
 			expect(daoAcc.token.toBase58()).to.eq(mint.toBase58())
 			expect(daoAcc.minBalance.toString()).to.eq("1000")
+		})
+	})
+
+	describe('close_dao()', async () => {
+		it('should close the DAO', async () => {
+			const { payer, daoPubkey } = await Factory.createDAO()
+			const program = await Factory.programPaidBy(payer)
+			const tx = await program.methods
+				.closeDao()
+				.accounts({
+					zendao: daoPubkey,
+				})
+				.rpc()
+			console.log("Your transaction signature", tx);
+			const notFoundError = await program.account.zendao.fetch(daoPubkey).catch(e => e)
+			expect(notFoundError.message).to.contains('Account does not exist')
 		})
 	})
 
@@ -61,14 +75,16 @@ describe("solzen", () => {
 
 			const program = await Factory.programPaidBy(payer)
 
-			const [userAccount, _bump] = findProgramAddressSync([
+			const [userAccount, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				child.publicKey.toBuffer()
+				child.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
-			const [parentValidation, _bump2] = findProgramAddressSync([
+			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				payer.publicKey.toBuffer()
+				payer.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
 			const tx = await program.methods
@@ -89,11 +105,11 @@ describe("solzen", () => {
 		});
 
 		it("should validate the mint", async () => {
-			const { payer, daoPubkey, connection } =  await Factory.createDAO()
+			const { mint, payer, daoPubkey, connection } = await Factory.createDAO()
 			const wrongDao = await Factory.createDAO()
-			
+
 			const mintToTest = wrongDao.mint
-			
+
 			const child = anchor.web3.Keypair.generate()
 			const tokenAccount = await getOrCreateAssociatedTokenAccount(
 				connection,
@@ -112,14 +128,16 @@ describe("solzen", () => {
 			)
 			const program = await Factory.programPaidBy(payer)
 
-			const [userAccount, _bump] = findProgramAddressSync([
+			const [userAccount, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				child.publicKey.toBuffer()
+				child.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
-			const [parentValidation, _bump2] = findProgramAddressSync([
+			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				payer.publicKey.toBuffer()
+				payer.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
 			const error = await program.methods
@@ -142,9 +160,10 @@ describe("solzen", () => {
 			const program = await Factory.programPaidBy(payer)
 			const wrongSigner = anchor.web3.Keypair.generate()
 			const child = anchor.web3.Keypair.generate()
-			const [userAccount, _bump] = findProgramAddressSync([
+			const [userAccount, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				child.publicKey.toBuffer()
+				child.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId)
 
 			const tokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -154,9 +173,10 @@ describe("solzen", () => {
 				child.publicKey
 			)
 
-			const [parentValidation, _bump2] = findProgramAddressSync([
+			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				payer.publicKey.toBuffer()
+				payer.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
 			const error = await program.methods
@@ -178,9 +198,10 @@ describe("solzen", () => {
 			const { mint, payer, mintAuthority, daoPubkey, connection } = await Factory.createDAO()
 			const child = anchor.web3.Keypair.generate()
 			const program = await Factory.programPaidBy(payer)
-			const [userAccount, _bump] = findProgramAddressSync([
+			const [userAccount, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				child.publicKey.toBuffer()
+				child.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
 			const tokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -200,9 +221,10 @@ describe("solzen", () => {
 				10
 			)
 
-			const [parentValidation, _bump2] = findProgramAddressSync([
+			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
-				payer.publicKey.toBuffer()
+				payer.publicKey.toBuffer(),
+				mint.toBuffer(),
 			], program.programId);
 
 			const tx = await program.methods
@@ -236,7 +258,7 @@ describe("solzen", () => {
 			it("should dig a way to decode ZenDAO", async () => {
 				const { mint, payer } = await Factory.createMint();
 				const program = await Factory.programPaidBy(payer)
-				const [daoPubkey, _bump] = findProgramAddressSync([
+				const [daoPubkey, _bump] = await PublicKey.findProgramAddress([
 					anchor.utils.bytes.utf8.encode('dao'),
 					mint.toBuffer()
 				], program.programId);
@@ -264,13 +286,13 @@ describe("solzen", () => {
 			const { mint, payer } = await Factory.createMint();
 
 			const program = await Factory.programPaidBy(payer)
-			const [daoPubkey, _bump] = findProgramAddressSync([
+			const [daoPubkey, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('dao'),
 				mint.toBuffer()
 			], program.programId);
-			
+
 			const telegramUserId = new anchor.BN("1234");
-			const [telegramUser, _bump2] = findProgramAddressSync([
+			const [telegramUser, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('telegram_user'),
 				telegramUserId.toArray("le", 8),
 			], program.programId);

@@ -49,7 +49,8 @@ export default class Factory {
 
         const [userAccount, _bump2] = findProgramAddressSync([
             anchor.utils.bytes.utf8.encode('child'),
-            payer.publicKey.toBuffer()
+            payer.publicKey.toBuffer(),
+            mint.toBuffer(),
         ], program.programId);
 
         const tx = await program.methods

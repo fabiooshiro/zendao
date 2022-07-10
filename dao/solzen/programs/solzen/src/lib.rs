@@ -39,6 +39,10 @@ pub mod solzen {
         Ok(())
     }
 
+    pub fn close_dao(_ctx: Context<CloseDAO>) -> Result<()> {
+        Ok(())
+    }
+
     pub fn validate_telegram_user(ctx: Context<ValidateTelegramUser>, id: u64) -> Result<()> {
         let telegram_user = &mut ctx.accounts.telegram_user;
         telegram_user.pubkey = *ctx.accounts.signer.key;
@@ -51,7 +55,11 @@ pub mod solzen {
         let token_account = &ctx.accounts.token_account;
         let zendao = &ctx.accounts.zendao;
         if token_account.mint.key().to_string() != zendao.token.key().to_string() {
-            msg!("wrong mint {:?} should be {:?}", token_account.mint.key(), zendao.token.key());
+            msg!(
+                "wrong mint {:?} should be {:?}",
+                token_account.mint.key(),
+                zendao.token.key()
+            );
             return Err(error!(MyError::WrongToken));
         }
         let parent: &Signer = &ctx.accounts.parent;
@@ -93,7 +101,7 @@ pub struct InitDAO<'info> {
     pub zendao: Account<'info, models::Zendao>,
 
     #[account(init, payer = founder, space = models::Validation::LEN,
-        seeds = [b"child".as_ref(), founder.key.as_ref()], bump)]
+        seeds = [b"child".as_ref(), founder.key.as_ref(), token.as_ref()], bump)]
     pub validation: Account<'info, models::Validation>,
 
     #[account(mut)]
@@ -104,10 +112,22 @@ pub struct InitDAO<'info> {
 }
 
 #[derive(Accounts)]
+pub struct CloseDAO<'info> {
+    #[account(mut, close = signer)]
+    pub zendao: Account<'info, models::Zendao>,
+
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 #[instruction(child: Pubkey)]
 pub struct ValidateHuman<'info> {
     #[account(init, payer = parent, space = models::Validation::LEN,
-        seeds = [b"child".as_ref(), child.as_ref()], bump)]
+        seeds = [b"child".as_ref(), child.as_ref(), zendao.token.as_ref()], bump)]
     pub validation: Account<'info, models::Validation>,
 
     #[account()]

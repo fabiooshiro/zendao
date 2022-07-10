@@ -5,7 +5,6 @@ import { AnchorProvider, Program } from "@project-serum/anchor";
 import idl from '../models/solzen.json';
 import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Solzen } from '../models/solzen';
@@ -34,16 +33,16 @@ const network = clusterApiUrl(url.searchParams.get('cluster') as any || 'mainnet
 const publicKey = url.searchParams.get('child')
 const connection = new Connection(network, commitment)
 
-type ValidationProps = {
-}
+type ValidationProps = {}
 
 export function Validation({ }: ValidationProps) {
-    const { mint: mintStr } = useParams()
-    if (!mintStr) {
+    const { mint: mintUrlParam } = useParams()
+    if (!mintUrlParam) {
         return <div>Informe o token</div>
     }
     const [parent, setParent] = useState('')
     const [childBalance, setChildBalance] = useState('')
+    const [minBalance, setMinBalance] = useState('')
     const wallet = useWallet()
 
     async function getProvider() {
@@ -51,12 +50,26 @@ export function Validation({ }: ValidationProps) {
         return provider;
     }
 
-    const mint = new PublicKey(mintStr)//"CasshNb6PacBzSwbd5gw8uqoQEjcWxaQ9u9byFApShwT");
+    const mint = new PublicKey(mintUrlParam)
     const encoder = new TextEncoder()
-    const [daoPubkey, _bump] = findProgramAddressSync([
-        encoder.encode('dao'),
-        mint.toBuffer()
-    ], programID);
+    const zendao = new Promise<PublicKey>((resolve, reject) => {
+        PublicKey.findProgramAddress([
+            encoder.encode('dao'),
+            mint.toBuffer(),
+        ], programID).then(data => {
+            resolve(data[0])
+        }).catch(reject)
+    })
+
+    async function showDAO() {
+        try {
+            const program = await getProgram()
+            const daoData = await program.account.zendao.fetch(await zendao)
+            setMinBalance(daoData.minBalance.toString())
+        } catch (e) {
+            console.log(`Erro ao carregar os dados da DAO`, e)
+        }
+    }
 
     async function getProgram() {
         const provider = await getProvider()
@@ -84,9 +97,10 @@ export function Validation({ }: ValidationProps) {
         try {
             const program = await getProgram();
             const child = new PublicKey(publicKey)
-            const [userAccount, _bump] = findProgramAddressSync([
+            const [userAccount, _bump] = await PublicKey.findProgramAddress([
                 encoder.encode('child'),
-                child.toBuffer()
+                child.toBuffer(),
+                mint.toBuffer(),
             ], program.programId);
             const valAcc = await program.account.validation.fetch(userAccount)
             console.log(valAcc)
@@ -101,16 +115,36 @@ export function Validation({ }: ValidationProps) {
     useEffect(() => {
         showUserStatus()
         showUserBalance()
+        showDAO()
     }, [publicKey])
 
-    async function initialize() {
+    async function initializeDAO() {
+        if (!wallet?.publicKey) {
+            return;
+        }
         const provider = await getProvider()
         anchor.setProvider(provider);
         const program = new anchor.Program(idl as any, programID, provider);
+        const [userAccount, _bump2] = await PublicKey.findProgramAddress([
+            anchor.utils.bytes.utf8.encode('child'),
+            wallet.publicKey.toBuffer(),
+            mint.toBuffer(),
+        ], program.programId);
         const tx = await program.methods
-            .initialize(mint, new anchor.BN(1))
+            .initialize(mint, new anchor.BN(1000))
             .accounts({
-                zendao: daoPubkey
+                zendao: await zendao,
+                validation: userAccount,
+            })
+            .rpc()
+    }
+
+    async function closeDAO() {
+        const program = await getProgram();
+        const tx = await program.methods
+            .closeDao()
+            .accounts({
+                zendao: await zendao,
             })
             .rpc()
     }
@@ -126,25 +160,27 @@ export function Validation({ }: ValidationProps) {
         }
         const program = await getProgram();
         const child = new PublicKey(publicKey)
-        const [userAccount, _bump] = findProgramAddressSync([
+        const [userAccount, _bump] = await PublicKey.findProgramAddress([
             encoder.encode('child'),
-            child.toBuffer()
+            child.toBuffer(),
+            mint.toBuffer(),
         ], program.programId)
         console.log({ userAccount: userAccount.toBase58(), wallet: wallet.publicKey.toBase58() })
         const tokenAccount = await findAssociatedTokenAddress(
             child,
             mint,
         )
-        const [parentValidation, _] = findProgramAddressSync([
+        const [parentValidation, _] = await PublicKey.findProgramAddress([
             new TextEncoder().encode('child'),
             wallet.publicKey.toBuffer(),
+            mint.toBuffer(),
         ], program.programId)
         const tx = await program.methods
             .validateHuman(child)
             .accounts({
                 validation: userAccount,
                 tokenAccount: tokenAccount,
-                zendao: daoPubkey,
+                zendao: await zendao,
                 parentValidation,
             })
             .rpc()
@@ -160,8 +196,19 @@ export function Validation({ }: ValidationProps) {
             <div>Validando: {publicKey}</div>
         )}
         <div>Saldo: {childBalance}</div>
+        <div>Valor mínimo, na menor unidade, para participar das votações: {minBalance}</div>
         <button
             onClick={validate}
         >Validar</button>
+
+        <button
+            onClick={closeDAO}
+        >Fechar a DAO</button>
+
+        <button
+            onClick={initializeDAO}
+        >
+            Iniciar a DAO
+        </button>
     </div>)
 }

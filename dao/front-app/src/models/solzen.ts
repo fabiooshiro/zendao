@@ -38,6 +38,27 @@ export type Solzen = {
       ]
     },
     {
+      "name": "closeDao",
+      "accounts": [
+        {
+          "name": "zendao",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "validateTelegramUser",
       "accounts": [
         {
@@ -221,6 +242,27 @@ export const IDL: Solzen = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "closeDao",
+      "accounts": [
+        {
+          "name": "zendao",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "validateTelegramUser",
