@@ -13,6 +13,7 @@ import {
 import { WalletMultiButton } from '@solana/wallet-adapter-material-ui';
 import { Validation } from './pages/Validation';
 import { Landing } from './pages/Landing';
+import { Telegram } from './pages/Telegram';
 
 export const App: FC = () => {
     return (
@@ -27,6 +28,7 @@ export const App: FC = () => {
                         <Routes>
                             <Route path='/' element={<Landing />} />
                             <Route path='/validation/:mint' element={<Validation />} />
+                            <Route path='/dao/:mint/telegram' element={<Telegram />} />
                         </Routes>
                     </Container>
                 </Router>

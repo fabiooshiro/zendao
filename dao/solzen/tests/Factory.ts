@@ -3,6 +3,7 @@ import { AnchorProvider, Program } from "@project-serum/anchor";
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 import { createMint } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { assert } from "chai";
 import { Solzen } from "../target/types/solzen";
 
 export default class Factory {
@@ -60,7 +61,8 @@ export default class Factory {
                 validation: userAccount
             })
             .rpc()
-        console.log("DAO foundation transaction", tx)
+        // console.log("DAO foundation transaction", tx)
+        assert(typeof tx === 'string')
         return { daoPubkey, mint, payer, mintAuthority, connection }
     }
 }

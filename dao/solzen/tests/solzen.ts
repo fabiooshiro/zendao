@@ -281,33 +281,5 @@ describe("solzen", () => {
 		})
 	})
 
-	describe('validateTelegramUser()', () => {
-		it("should validate the Telegram User", async () => {
-			const { mint, payer } = await Factory.createMint();
-
-			const program = await Factory.programPaidBy(payer)
-			const [daoPubkey, _bump] = await PublicKey.findProgramAddress([
-				anchor.utils.bytes.utf8.encode('dao'),
-				mint.toBuffer()
-			], program.programId);
-
-			const telegramUserId = new anchor.BN("1234");
-			const [telegramUser, _bump2] = await PublicKey.findProgramAddress([
-				anchor.utils.bytes.utf8.encode('telegram_user'),
-				telegramUserId.toArray("le", 8),
-			], program.programId);
-
-			const tx = await program.methods
-				.validateTelegramUser(telegramUserId)
-				.accounts({
-					telegramUser
-				})
-				.rpc()
-			console.log("Your transaction signature", tx);
-			const telUserAcc = await program.account.telegramUser.fetch(telegramUser)
-			expect(telUserAcc.id.toString()).to.eq(telegramUserId.toString())
-		})
-	})
-
 });
 

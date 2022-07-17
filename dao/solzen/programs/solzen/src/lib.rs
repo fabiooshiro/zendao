@@ -45,9 +45,13 @@ pub mod solzen {
 
     pub fn validate_telegram_user(ctx: Context<ValidateTelegramUser>, id: u64) -> Result<()> {
         let telegram_user = &mut ctx.accounts.telegram_user;
+        if ctx.accounts.token_account.amount < ctx.accounts.zendao.min_balance {
+            return Err(error!(MyError::InsuficientAmount));
+        }
         telegram_user.pubkey = *ctx.accounts.signer.key;
         msg!("telegram id = {:?}", id);
         telegram_user.id = id;
+        telegram_user.dao = ctx.accounts.zendao.key();
         Ok(())
     }
 
@@ -150,8 +154,14 @@ pub struct ValidateHuman<'info> {
 #[instruction(id: u64)]
 pub struct ValidateTelegramUser<'info> {
     #[account(init, payer = signer, space = models::TelegramUser::LEN,
-        seeds = [b"telegram_user".as_ref(), &id.to_le_bytes()], bump)]
+        seeds = [b"telegram_user".as_ref(), zendao.key().as_ref(), &id.to_le_bytes()], bump)]
     pub telegram_user: Account<'info, models::TelegramUser>,
+
+    #[account()]
+    pub zendao: Account<'info, models::Zendao>,
+
+    #[account()]
+    pub token_account: Account<'info, TokenAccount>,
 
     #[account(mut)]
     pub signer: Signer<'info>,
