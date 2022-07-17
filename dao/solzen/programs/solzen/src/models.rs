@@ -7,7 +7,14 @@ const U64_LENGTH: usize = 8;
 
 #[account]
 pub struct Zendao {
+    /**
+     * The token to be managed
+     */
     pub token: Pubkey,
+
+    /**
+     * Minimum amount to be a member
+     */
     pub min_balance: u64,
 }
 
@@ -31,8 +38,19 @@ impl Validation {
 
 #[account]
 pub struct TelegramUser {
+    /**
+     * User public key
+     */
     pub pubkey: Pubkey,
+
+    /**
+     * Its like an ID
+     */
     pub dao: Pubkey,
+
+    /**
+     * Telegram user ID
+     */
     pub id: u64,
 }
 

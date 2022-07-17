@@ -44,12 +44,27 @@ pub mod solzen {
     }
 
     pub fn validate_telegram_user(ctx: Context<ValidateTelegramUser>, id: u64) -> Result<()> {
+        let token_account = &ctx.accounts.token_account;
+        let zendao = &ctx.accounts.zendao;
+        msg!("telegram id = {:?}", id);
+        if token_account.mint.key().to_string() != zendao.token.key().to_string() {
+            msg!(
+                "wrong mint {:?} should be {:?}",
+                token_account.mint.key(),
+                zendao.token.key()
+            );
+            return Err(error!(MyError::WrongToken));
+        }
+        msg!("token owner {:?}", token_account.owner);
+        if token_account.owner != ctx.accounts.signer.key() {
+            return Err(error!(MyError::WrongOwner));
+        }
         let telegram_user = &mut ctx.accounts.telegram_user;
         if ctx.accounts.token_account.amount < ctx.accounts.zendao.min_balance {
+            msg!("token owner = {:?} amount = {:?} min = {:?}", token_account.owner, ctx.accounts.token_account.amount, ctx.accounts.zendao.min_balance);
             return Err(error!(MyError::InsuficientAmount));
         }
         telegram_user.pubkey = *ctx.accounts.signer.key;
-        msg!("telegram id = {:?}", id);
         telegram_user.id = id;
         telegram_user.dao = ctx.accounts.zendao.key();
         Ok(())
