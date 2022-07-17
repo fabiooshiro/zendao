@@ -27,11 +27,12 @@ pub enum MyError {
 pub mod solzen {
     use super::*;
 
-    pub fn initialize(ctx: Context<InitDAO>, token: Pubkey, min_balance: u64) -> Result<()> {
+    pub fn initialize(ctx: Context<InitDAO>, token: Pubkey, min_balance: u64, dao_slug: String) -> Result<()> {
         let dao = &mut ctx.accounts.zendao;
         let founder: &Signer = &ctx.accounts.founder;
         dao.token = token;
         dao.min_balance = min_balance;
+        dao.slug = dao_slug;
         let validation = &mut ctx.accounts.validation;
         validation.child = *founder.key;
         let clock: Clock = Clock::get().unwrap();
@@ -112,15 +113,23 @@ pub mod solzen {
     }
 }
 
+fn name_seed(name: &str) -> &[u8] {
+    let b = name.as_bytes();
+    if b.len() > 32 { &b[0..32] } else { b }
+}
 #[derive(Accounts)]
-#[instruction(token: Pubkey)]
+// Atencao isso eh posicional
+#[instruction(token: Pubkey, min_balance: u64, dao_slug: String)]
 pub struct InitDAO<'info> {
-    #[account(init, payer = founder, space = models::Zendao::LEN,
-        seeds = [b"dao".as_ref(), token.as_ref()], bump)]
+    #[account(init, payer = founder, space = models::Zendao::space(&dao_slug),
+        seeds = [b"dao".as_ref(), 
+            name_seed(&dao_slug).as_ref(),
+            // dao_pubslug.as_ref(),
+        ], bump)]
     pub zendao: Account<'info, models::Zendao>,
 
     #[account(init, payer = founder, space = models::Validation::LEN,
-        seeds = [b"child".as_ref(), founder.key.as_ref(), token.as_ref()], bump)]
+        seeds = [b"child".as_ref(), founder.key.as_ref(), zendao.key().as_ref()], bump)]
     pub validation: Account<'info, models::Validation>,
 
     #[account(mut)]
@@ -146,7 +155,7 @@ pub struct CloseDAO<'info> {
 #[instruction(child: Pubkey)]
 pub struct ValidateHuman<'info> {
     #[account(init, payer = parent, space = models::Validation::LEN,
-        seeds = [b"child".as_ref(), child.as_ref(), zendao.token.as_ref()], bump)]
+        seeds = [b"child".as_ref(), child.as_ref(), zendao.key().as_ref()], bump)]
     pub validation: Account<'info, models::Validation>,
 
     #[account()]

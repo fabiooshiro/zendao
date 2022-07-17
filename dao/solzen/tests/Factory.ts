@@ -2,10 +2,11 @@ import * as anchor from "@project-serum/anchor";
 import { AnchorProvider, Program } from "@project-serum/anchor";
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 import { createMint } from "@solana/spl-token";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, SystemProgram } from "@solana/web3.js";
 import { assert } from "chai";
 import { Solzen } from "../target/types/solzen";
 
+let daoSeq = 0
 export default class Factory {
 
     static async createMint() {
@@ -39,23 +40,24 @@ export default class Factory {
         return new anchor.Program(program.idl as anchor.Idl, program.programId, newProvider) as Program<Solzen>
     }
 
-    static async createDAO() {
+    static async createDAO(options?: { daoSlug: string }) {
         const { mint, payer, mintAuthority, connection } = await Factory.createMint();
         const program = await Factory.programPaidBy(payer);
-
+        const daoSlug = options?.daoSlug || ('zendao' + daoSeq++)
+        console.log(`criando dao [${daoSlug}]`)
         const [daoPubkey, _bump] = findProgramAddressSync([
             anchor.utils.bytes.utf8.encode('dao'),
-            mint.toBuffer()
+            Buffer.from(daoSlug.slice(0, 32)),
         ], program.programId);
 
         const [userAccount, _bump2] = findProgramAddressSync([
             anchor.utils.bytes.utf8.encode('child'),
             payer.publicKey.toBuffer(),
-            mint.toBuffer(),
+            daoPubkey.toBuffer(),
         ], program.programId);
 
         const tx = await program.methods
-            .initialize(mint, new anchor.BN(10))
+            .initialize(mint, new anchor.BN(10), daoSlug)
             .accounts({
                 zendao: daoPubkey,
                 validation: userAccount

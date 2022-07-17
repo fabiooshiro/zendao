@@ -28,7 +28,7 @@ export const App: FC = () => {
                         <Routes>
                             <Route path='/' element={<Landing />} />
                             <Route path='/validation/:mint' element={<Validation />} />
-                            <Route path='/dao/:mint/telegram' element={<Telegram />} />
+                            <Route path='/dao/:daoSlug/telegram' element={<Telegram />} />
                         </Routes>
                     </Container>
                 </Router>

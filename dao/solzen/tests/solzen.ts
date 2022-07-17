@@ -10,21 +10,21 @@ describe("solzen", () => {
 	describe('initialize()', () => {
 		it("should initialize the DAO", async () => {
 			const { mint, payer } = await Factory.createMint();
-
+			const daoSlug = 'the-dao'
 			const program = await Factory.programPaidBy(payer)
 			const [daoPubkey, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('dao'),
-				mint.toBuffer()
+				Buffer.from(daoSlug.slice(0, 32)),
 			], program.programId);
 
 			const [userAccount, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				payer.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
 			const tx = await program.methods
-				.initialize(mint, new anchor.BN(1000))
+				.initialize(mint, new anchor.BN(1000), daoSlug)
 				.accounts({
 					zendao: daoPubkey,
 					validation: userAccount,
@@ -78,13 +78,13 @@ describe("solzen", () => {
 			const [userAccount, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				child.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
 			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				payer.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
 			const tx = await program.methods
@@ -105,9 +105,8 @@ describe("solzen", () => {
 		});
 
 		it("should validate the mint", async () => {
-			const { mint, payer, daoPubkey, connection } = await Factory.createDAO()
-			const wrongDao = await Factory.createDAO()
-
+			const { payer, daoPubkey, connection } = await Factory.createDAO()
+			const wrongDao = await Factory.createDAO({ daoSlug: 'other-dao' })
 			const mintToTest = wrongDao.mint
 
 			const child = anchor.web3.Keypair.generate()
@@ -126,20 +125,22 @@ describe("solzen", () => {
 				wrongDao.mintAuthority,
 				10
 			)
+			
 			const program = await Factory.programPaidBy(payer)
 
 			const [userAccount, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				child.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
 			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				payer.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
+			console.log('ok')
 			const error = await program.methods
 				.validateHuman(child.publicKey)
 				.accounts({
@@ -176,7 +177,7 @@ describe("solzen", () => {
 			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				payer.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
 			const error = await program.methods
@@ -201,7 +202,7 @@ describe("solzen", () => {
 			const [userAccount, _bump] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				child.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
 			const tokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -224,7 +225,7 @@ describe("solzen", () => {
 			const [parentValidation, _bump2] = await PublicKey.findProgramAddress([
 				anchor.utils.bytes.utf8.encode('child'),
 				payer.publicKey.toBuffer(),
-				mint.toBuffer(),
+				daoPubkey.toBuffer(),
 			], program.programId);
 
 			const tx = await program.methods
@@ -254,31 +255,6 @@ describe("solzen", () => {
 			expect(error.message).to.equal('failed to send transaction: Transaction simulation failed: Error processing Instruction 0: custom program error: 0x0')
 		})
 
-		xdescribe('chewing glass', () => {
-			it("should dig a way to decode ZenDAO", async () => {
-				const { mint, payer } = await Factory.createMint();
-				const program = await Factory.programPaidBy(payer)
-				const [daoPubkey, _bump] = await PublicKey.findProgramAddress([
-					anchor.utils.bytes.utf8.encode('dao'),
-					mint.toBuffer()
-				], program.programId);
-
-				const tx = await program.methods
-					.initialize(mint, new anchor.BN(1))
-					.accounts({
-						zendao: daoPubkey
-					})
-					.rpc()
-				console.log("Your transaction signature", tx);
-				const accInfo = await program.account.zendao.getAccountInfo(daoPubkey)
-				const daoAcc = program.account.zendao.coder.accounts.decodeUnchecked('Zendao', accInfo.data)
-				const disc = BorshAccountsCoder.accountDiscriminator('Zendao')
-				const disc2 = BorshAccountsCoder.accountDiscriminator('Validator')
-				console.log(accInfo.data.slice(0, 8).toString('hex'))
-				console.log(disc.toString('hex'))
-				console.log(disc2.toString('hex'))
-			})
-		})
 	})
 
 });

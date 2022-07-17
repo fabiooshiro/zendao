@@ -67,6 +67,16 @@ export type Solzen = {
           "isSigner": false
         },
         {
+          "name": "zendao",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
@@ -170,6 +180,10 @@ export type Solzen = {
         "fields": [
           {
             "name": "pubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "dao",
             "type": "publicKey"
           },
           {
@@ -273,6 +287,16 @@ export const IDL: Solzen = {
           "isSigner": false
         },
         {
+          "name": "zendao",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
@@ -376,6 +400,10 @@ export const IDL: Solzen = {
         "fields": [
           {
             "name": "pubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "dao",
             "type": "publicKey"
           },
           {

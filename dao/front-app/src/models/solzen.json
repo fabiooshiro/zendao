@@ -67,6 +67,16 @@
           "isSigner": false
         },
         {
+          "name": "zendao",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
@@ -170,6 +180,10 @@
         "fields": [
           {
             "name": "pubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "dao",
             "type": "publicKey"
           },
           {

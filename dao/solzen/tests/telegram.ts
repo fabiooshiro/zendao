@@ -5,6 +5,9 @@ import { expect } from "chai";
 import Factory from "./Factory";
 
 describe("solzen", () => {
+	xit("smoke create the DAO", async () => {
+		await Factory.createDAO()
+	})
 
 	describe('validateTelegramUser()', () => {
 		it('should block token account with wrong owner', async () => {
@@ -49,7 +52,7 @@ describe("solzen", () => {
 			expect(error.message).to.contains('WrongOwner')
 		})
 
-		it.only("should block user with few tokens", async () => {
+		it("should block user with few tokens", async () => {
 			const { mint, payer, mintAuthority, daoPubkey, connection } = await Factory.createDAO()
 			const program = await Factory.programPaidBy(payer)
 			

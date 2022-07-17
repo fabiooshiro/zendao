@@ -1,18 +1,16 @@
 # Project
 
-Project Description
-
-<em>[TODO.md spec & Kanban Board](https://bit.ly/3fCwKfM)</em>
+Para ver o board instale o plugin [Coddx](https://marketplace.visualstudio.com/items?itemName=coddx.coddx-alpha)
 
 ### Todo
 
-- [ ] Implementar o front da validação do usuário do Telegram  
+- [ ] Implementar o bot do Telegram  
 - [ ] Quando fechar a DAO remover o validation do founder  
 - [ ] Antes de fechar a DAO validar quem está fechando  
-- [ ] Implementar o bot do Telegram  
 
 ### In Progress
 
+- [ ] Implementar o front da validação do usuário do Telegram  
 
 ### Done ✓
 

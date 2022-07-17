@@ -16,10 +16,22 @@ pub struct Zendao {
      * Minimum amount to be a member
      */
     pub min_balance: u64,
+
+    /**
+     * DAOs slug
+     */
+    pub slug: String,
 }
 
 impl Zendao {
     pub const LEN: usize = DISCRIMINATOR_LENGTH + PUBLIC_KEY_LENGTH + U64_LENGTH;
+    pub fn space(name: &str) -> usize {
+        // discriminator + owner pubkey + bump + capacity
+        Zendao::LEN +
+            // name string
+            4 + name.len()
+    }
+
 }
 
 #[account]
