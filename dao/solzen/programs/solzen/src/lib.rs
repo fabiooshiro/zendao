@@ -124,7 +124,6 @@ pub struct InitDAO<'info> {
     #[account(init, payer = founder, space = models::Zendao::space(&dao_slug),
         seeds = [b"dao".as_ref(), 
             name_seed(&dao_slug).as_ref(),
-            // dao_pubslug.as_ref(),
         ], bump)]
     pub zendao: Account<'info, models::Zendao>,
 

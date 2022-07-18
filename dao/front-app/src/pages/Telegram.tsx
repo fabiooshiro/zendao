@@ -25,5 +25,6 @@ const id = url.searchParams.get('id')
 const connection = new Connection(network, commitment)
 
 export function Telegram() {
-    return <div></div>
+    const { daoSlug } = useParams()
+    return <div>{daoSlug}</div>
 }

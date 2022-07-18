@@ -9,11 +9,8 @@ import { ZendaoService } from '../services/ZendaoService';
 import { Amount } from '../components/Amount';
 const programID = new PublicKey(idl.metadata.address);
 
-const commitment = 'processed'
 const url = new URL(window.location.href)
-const network = clusterApiUrl(url.searchParams.get('cluster') as any || 'mainnet-beta')
 const childPublicKey = url.searchParams.get('child')
-const connection = new Connection(network, commitment)
 
 type ValidationProps = {}
 
@@ -32,13 +29,10 @@ export function Validation({ }: ValidationProps) {
     const [decimals, setDecimals] = useState<number | null>(null)
     const wallet = useWallet()
 
-    async function getProvider() {
-        const provider = new AnchorProvider(connection, wallet as any, { commitment });
-        return provider;
-    }
-
     const mint = new PublicKey(mintUrlParam)
     const encoder = new TextEncoder()
+    const connection = ZendaoService.getConnection()
+
     const zendao = new Promise<PublicKey>((resolve, reject) => {
         PublicKey.findProgramAddress([
             encoder.encode('dao'),
@@ -125,27 +119,6 @@ export function Validation({ }: ValidationProps) {
         showUserBalance()
     }, [wallet?.publicKey])
 
-    async function initializeDAO() {
-        if (!wallet?.publicKey) {
-            return;
-        }
-        const provider = await getProvider()
-        anchor.setProvider(provider);
-        const program = new anchor.Program(idl as any, programID, provider);
-        const [userAccount, _bump2] = await PublicKey.findProgramAddress([
-            anchor.utils.bytes.utf8.encode('child'),
-            wallet.publicKey.toBuffer(),
-            mint.toBuffer(),
-        ], program.programId);
-        const tx = await program.methods
-            .initialize(mint, new anchor.BN(1000))
-            .accounts({
-                zendao: await zendao,
-                validation: userAccount,
-            })
-            .rpc()
-    }
-
     async function closeDAO() {
         const program = await ZendaoService.getProgram(wallet)
         const tx = await program.methods
@@ -212,14 +185,6 @@ export function Validation({ }: ValidationProps) {
             <button
                 onClick={closeDAO}
             >Fechar a DAO</button>
-        ) : null}
-
-        {!daoExist ? (
-            <button
-                onClick={initializeDAO}
-            >
-                Iniciar a DAO
-            </button>
         ) : null}
     </div>)
 }

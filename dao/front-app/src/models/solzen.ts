@@ -34,6 +34,10 @@ export type Solzen = {
         {
           "name": "minBalance",
           "type": "u64"
+        },
+        {
+          "name": "daoSlug",
+          "type": "string"
         }
       ]
     },
@@ -149,6 +153,10 @@ export type Solzen = {
           {
             "name": "minBalance",
             "type": "u64"
+          },
+          {
+            "name": "slug",
+            "type": "string"
           }
         ]
       }
@@ -254,6 +262,10 @@ export const IDL: Solzen = {
         {
           "name": "minBalance",
           "type": "u64"
+        },
+        {
+          "name": "daoSlug",
+          "type": "string"
         }
       ]
     },
@@ -369,6 +381,10 @@ export const IDL: Solzen = {
           {
             "name": "minBalance",
             "type": "u64"
+          },
+          {
+            "name": "slug",
+            "type": "string"
           }
         ]
       }

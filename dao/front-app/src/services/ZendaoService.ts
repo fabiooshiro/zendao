@@ -14,11 +14,19 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: PublicKey = new PublicKey(
 const encoder = new TextEncoder()
 const commitment = 'processed'
 const url = new URL(window.location.href)
-const network = clusterApiUrl(url.searchParams.get('cluster') as any || 'mainnet-beta')
-const publicKey = url.searchParams.get('child')
+let network = ''
+if (url.searchParams.get('cluster') === 'localhost') {
+    network = 'http://localhost:8899'
+} else {
+    network = clusterApiUrl(url.searchParams.get('cluster') as any || 'mainnet-beta')
+}
 const connection = new Connection(network, commitment)
 
 export class ZendaoService {
+
+    static getConnection() {
+        return connection
+    }
 
     static async findAssociatedTokenAddress(
         walletAddress: PublicKey,

@@ -34,6 +34,10 @@
         {
           "name": "minBalance",
           "type": "u64"
+        },
+        {
+          "name": "daoSlug",
+          "type": "string"
         }
       ]
     },
@@ -149,6 +153,10 @@
           {
             "name": "minBalance",
             "type": "u64"
+          },
+          {
+            "name": "slug",
+            "type": "string"
           }
         ]
       }
