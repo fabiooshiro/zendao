@@ -23,6 +23,29 @@ if (url.searchParams.get('cluster') === 'localhost') {
 const connection = new Connection(network, commitment)
 
 export class ZendaoService {
+    static async findTelegramUserAccount(telegramID: string, daoSlug: string, wallet?: WalletContextState) {
+        const telegramUserId = new anchor.BN(telegramID)
+        const program = ZendaoService.getProgram(wallet)
+        const [daoPubkey, _bump] = await ZendaoService.findDaoAddress(daoSlug)
+        return await PublicKey.findProgramAddress([
+            anchor.utils.bytes.utf8.encode('telegram_user'),
+            daoPubkey.toBuffer(),
+            telegramUserId.toArray("le", 8) as any,
+        ], program.programId)
+    }
+    static async findDaoAddress(daoSlug: string) {
+        return await PublicKey.findProgramAddress([
+            encoder.encode('dao'),
+            Buffer.from(daoSlug.slice(0, 32)),
+        ], programID)
+    }
+
+    static async findDao(daoSlug: string, wallet?: WalletContextState) {
+        const program = ZendaoService.getProgram(wallet)
+        const [daoPubkey, _bump] = await ZendaoService.findDaoAddress(daoSlug)
+        const daoAcc = await program.account.zendao.fetch(daoPubkey)
+        return daoAcc
+    }
 
     static getConnection() {
         return connection
