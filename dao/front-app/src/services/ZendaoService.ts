@@ -1,4 +1,4 @@
-import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import * as anchor from "@project-serum/anchor";
 import { AnchorProvider, Program } from "@project-serum/anchor";
@@ -13,16 +13,15 @@ const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: PublicKey = new PublicKey(
 );
 const encoder = new TextEncoder()
 const commitment = 'processed'
-const url = new URL(window.location.href)
-let network = ''
-if (url.searchParams.get('cluster') === 'localhost') {
-    network = 'http://localhost:8899'
-} else {
-    network = clusterApiUrl(url.searchParams.get('cluster') as any || 'mainnet-beta')
-}
-const connection = new Connection(network, commitment)
 
 export class ZendaoService {
+
+    private static connection: Connection
+
+    static setConnection(connection) {
+        ZendaoService.connection = connection
+    }
+
     static async findTelegramUserAccount(telegramID: string, daoSlug: string, wallet?: WalletContextState) {
         const telegramUserId = new anchor.BN(telegramID)
         const program = ZendaoService.getProgram(wallet)
@@ -33,6 +32,7 @@ export class ZendaoService {
             telegramUserId.toArray("le", 8) as any,
         ], program.programId)
     }
+
     static async findDaoAddress(daoSlug: string) {
         return await PublicKey.findProgramAddress([
             encoder.encode('dao'),
@@ -48,7 +48,7 @@ export class ZendaoService {
     }
 
     static getConnection() {
-        return connection
+        return ZendaoService.connection
     }
 
     static async findAssociatedTokenAddress(
@@ -82,7 +82,7 @@ export class ZendaoService {
     }
 
     static getProvider(wallet?: WalletContextState) {
-        const provider = new AnchorProvider(connection, wallet as any, { commitment });
+        const provider = new AnchorProvider(ZendaoService.getConnection(), wallet as any, { commitment });
         return provider;
     }
 

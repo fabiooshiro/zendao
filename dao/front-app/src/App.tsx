@@ -5,7 +5,6 @@ import {
     BrowserRouter as Router,
     Routes,
     Route,
-    HashRouter,
 } from "react-router-dom";
 import {
     Container,
@@ -15,6 +14,15 @@ import { Validation } from './pages/Validation';
 import { Landing } from './pages/Landing';
 import { Telegram } from './pages/Telegram';
 import { InitDAO } from './pages/InitDAO';
+import { clusterApiUrl, Connection } from '@solana/web3.js';
+import { ZendaoService } from './services/ZendaoService';
+
+const commitment = 'processed'
+const url = new URL(window.location.href)
+const network = clusterApiUrl(url.searchParams.get('cluster') as any || 'mainnet-beta')
+const connection = new Connection(network, commitment)
+
+ZendaoService.setConnection(connection)
 
 export const App: FC = () => {
     return (

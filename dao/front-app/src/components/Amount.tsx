@@ -7,7 +7,7 @@ type AmountProps = {
 }
 
 export function Amount({ value, decimals }: AmountProps) {
-    if (decimals === null || value === '') {
+    if (decimals === null || value === '' || decimals < 0) {
         return <span></span>
     }
     return <span>{ZendaoService.format(value, { decimals: decimals })}</span>

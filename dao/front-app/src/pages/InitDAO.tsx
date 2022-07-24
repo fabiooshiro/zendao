@@ -44,7 +44,7 @@ export function InitDAO() {
             anchor.utils.bytes.utf8.encode('child'),
             wallet.publicKey.toBuffer(),
             daoPubkey.toBuffer(),
-        ], program.programId);
+        ], program.programId)
 
         const tx = await program.methods
             .initialize(mint, new anchor.BN(1000), daoSlug)

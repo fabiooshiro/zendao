@@ -2,9 +2,7 @@
     "scripts": {
         "deploy": "node ./scripts/deploy.js",
         "test": "nodemon --ignore ./target --ext ts,rs --exec 'anchor test'",
-        "sync_front_app": "yarn sync_front_app:idl && yarn sync_front_app:types",
-        "sync_front_app:idl": "cp ./target/idl/solzen.json ../front-app/src/models/solzen.json",
-        "sync_front_app:types": "cp ./target/types/solzen.ts ../front-app/src/models/solzen.ts"
+        "sync:models": "cd ./scripts && ./sync_models.sh"
     },
     "dependencies": {
         "@project-serum/anchor": "^0.24.2",

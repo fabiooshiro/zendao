@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as anchor from "@project-serum/anchor";
-import { AnchorProvider } from "@project-serum/anchor";
 import idl from '../models/solzen.json';
-import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { ZendaoService } from '../services/ZendaoService';
 import { Amount } from '../components/Amount';
