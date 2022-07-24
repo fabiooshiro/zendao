@@ -6,6 +6,11 @@ A proposta não é, de forma alguma, remover o modelo democrático e sim atualiz
 Antes dos computadores e da internet era impossível implementar um modelo mais eficiente.  
 Claro que não tenho as respostas para todas as possíveis dúvidas de como seria essa versão 2.0 e por isso convido vc a se juntar nessa aventura e descobrir juntos como implementá-la.
 
+Para participar do 
+[nosso primeiro grupo no Telegram](https://t.me/+oUUGneMtuQQ3ZDMx)
+você precisa ter [Cássias](https://github.com/fabiooshiro/cassias).
+Fale com o nosso bot, chamado [ZendaoBot](https://t.me/zendao_bot), para validar/associar a sua chave pública com o seu usuário do telegram.
+
 ## DAO
 
 Ainda bem que de 2010 para cá surgiu o Ethereum e como o meu sonho tem lógica, eu preguiçosamente fiquei esperando as coisas acontecerem naturalmente, e de fato o mundo caminha naturalmente para esse novo modelo. Infelizmente ou não, contrapondo a minha preguiça eu sou extremamente ansioso e com um estímulo do meu amigo Ruy Góes estou saindo da inércia e acordando esse sonho de 10 anos.  
