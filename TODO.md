@@ -4,16 +4,21 @@ Para ver o board instale o plugin [Coddx](https://marketplace.visualstudio.com/i
 
 ### Todo
 
-- [ ] Implementar o bot do Telegram  
+- [ ] Pensar em um primeiro módulo do curso  
+- [ ] Pensar em stake  
+- [ ] Pensar em Wold Tokenization  
+- [ ] Facilitar criar uma nova DAO  
 - [ ] Quando fechar a DAO remover o validation do founder  
 - [ ] Antes de fechar a DAO validar quem está fechando  
 
 ### In Progress
 
-- [ ] Implementar o front da validação do usuário do Telegram  
+- [ ] Facilitar pagar uma cerveja para a DAO  
 
 ### Done ✓
 
+- [x] Implementar o bot do Telegram  
+- [x] Implementar o front da validação do usuário do Telegram  
 - [x] Criar a DAO no front  
 - [x] Implementar on-chain da validação do usuário do Telegram  
 - [x] Definir o modelo da Account para validar o usuário do Telegram  
