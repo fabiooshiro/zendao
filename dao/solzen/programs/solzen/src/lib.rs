@@ -4,7 +4,7 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{CloseAccount, Mint, Token, TokenAccount, Transfer},
 };
-mod models;
+pub mod models;
 
 declare_id!("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv");
 
@@ -35,8 +35,8 @@ pub mod solzen {
         dao.slug = dao_slug;
         let validation = &mut ctx.accounts.validation;
         validation.child = *founder.key;
-        let clock: Clock = Clock::get().unwrap();
-        validation.timestamp = clock.unix_timestamp;
+        // let clock: Clock = Clock::get().unwrap();
+        // validation.timestamp = clock.unix_timestamp;
         Ok(())
     }
 

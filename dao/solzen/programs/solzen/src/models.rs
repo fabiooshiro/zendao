@@ -6,6 +6,7 @@ const TIMESTAMP_LENGTH: usize = 8;
 const U64_LENGTH: usize = 8;
 
 #[account]
+#[derive(Default)]
 pub struct Zendao {
     /**
      * The token to be managed
