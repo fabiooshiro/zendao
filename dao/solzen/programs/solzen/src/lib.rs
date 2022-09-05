@@ -4,6 +4,7 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{CloseAccount, Mint, Token, TokenAccount, Transfer},
 };
+use ctsi_sol::Clock;
 pub mod models;
 
 declare_id!("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv");
@@ -26,7 +27,7 @@ pub enum MyError {
 #[program]
 pub mod solzen {
     use super::*;
-
+    
     pub fn initialize(ctx: Context<InitDAO>, token: Pubkey, min_balance: u64, dao_slug: String) -> Result<()> {
         let dao = &mut ctx.accounts.zendao;
         let founder: &Signer = &ctx.accounts.founder;
@@ -35,8 +36,8 @@ pub mod solzen {
         dao.slug = dao_slug;
         let validation = &mut ctx.accounts.validation;
         validation.child = *founder.key;
-        // let clock: Clock = Clock::get().unwrap();
-        // validation.timestamp = clock.unix_timestamp;
+        let clock: Clock = Clock::get().unwrap();
+        validation.timestamp = clock.unix_timestamp;
         Ok(())
     }
 

@@ -1,5 +1,5 @@
-use std::{collections::BTreeMap, str::FromStr};
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
+use std::{collections::BTreeMap, str::FromStr};
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::stake_history::Epoch;
@@ -66,7 +66,7 @@ fn create_program_account_info<'a>(
 
 struct Resp<'a, T: AccountSerialize + AccountDeserialize + Owner + Clone> {
     account: Account<'a, T>,
-    info_key: Pubkey
+    info_key: Pubkey,
 }
 
 // fn create_account<'a, T: AccountSerialize + AccountDeserialize + Owner + Clone>() -> Resp<'a, T> {
@@ -87,8 +87,6 @@ fn it_just_runs() {
     bumps.insert(String::from("k"), 1);
     let info_key = Pubkey::default();
     let info_owner = Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap();
-    
-    
 
     let zd = Zendao {
         token: Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap(),
@@ -121,8 +119,7 @@ fn it_just_runs() {
     let mut lamports = 1000;
     let validation_info = create_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
     let validation = Account::<Validation>::try_from_unchecked(&validation_info).unwrap();
-    
-    
+
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
     let founder_info = create_signer_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
@@ -151,5 +148,12 @@ fn it_just_runs() {
     let token = Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap();
     let min_balance = 10;
     let dao_slug = String::from("slug");
-    initialize(ctx, token, min_balance, dao_slug);
+    let result = initialize(ctx, token, min_balance, dao_slug);
+    // ctx foi retirado da memoria nesse escopo
+    match result {
+        Ok(_) => println!("Ok"),
+        Err(_) => panic!("Wowww"),
+    }
+
+    assert_eq!(init_dao.validation.timestamp, 123);
 }

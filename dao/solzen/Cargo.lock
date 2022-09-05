@@ -505,6 +505,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctsi_sol"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "spl-associated-token-account",
+]
+
+[[package]]
 name = "curve25519-dalek"
 version = "3.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1247,6 +1256,7 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "ctsi_sol",
  "spl-associated-token-account",
 ]
 
