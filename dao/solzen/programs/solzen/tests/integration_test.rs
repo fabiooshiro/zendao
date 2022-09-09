@@ -1,7 +1,10 @@
+use anchor_lang::solana_program::example_mocks::solana_sdk::transaction::Transaction;
+use anchor_lang::solana_program::instruction::Instruction;
+use solana_program::sysvar::{self};
 use std::io::{Cursor, Read, Seek, SeekFrom};
 use std::{collections::BTreeMap, str::FromStr};
 
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program};
 use sha2::{Digest, Sha256};
 use solzen::entry;
 use solzen::{
@@ -11,6 +14,28 @@ use solzen::{
     InitDAO,
 };
 pub mod factory;
+
+#[test]
+fn it_should_call_sysvar() {
+    let program_id = Pubkey::from_str("Sysvar1111111111111111111111111111111111111").unwrap();
+
+    let mut transaction = Transaction::new_with_payer(
+        &[Instruction::new_with_bincode(
+            program_id,
+            &(),
+            vec![
+                AccountMeta::new(sysvar::clock::id(), false),
+                AccountMeta::new(sysvar::rent::id(), false),
+            ],
+        )],
+        Some(&Pubkey::default()),
+    );
+    if transaction.message.is_signer(0) {
+        println!("ok");
+    } else {
+        println!("nok {:?}", sysvar::clock::id());
+    }
+}
 
 #[test]
 fn it_should_call_entry_generated_by_anchors_macro() {
@@ -78,11 +103,13 @@ fn it_should_call_entry_generated_by_anchors_macro() {
 
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
-    let founder_info = factory::create_signer_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
+    let founder_info =
+        factory::create_signer_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
 
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
-    let program_info = factory::create_program_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
+    let program_info =
+        factory::create_program_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
     let accounts = &[zendao_info, validation_info, founder_info, program_info];
     entry(&program_id, accounts, &final_data).unwrap();
 }
