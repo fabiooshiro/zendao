@@ -4,7 +4,7 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::stake_history::Epoch;
-use sha2::{Digest, Sha256, Sha512};
+use sha2::{Digest, Sha256};
 use solzen::entry;
 use solzen::{
     self,
@@ -12,6 +12,8 @@ use solzen::{
     solzen::initialize,
     InitDAO,
 };
+pub mod factory;
+
 
 fn create_account_info<'a>(
     key: &'a Pubkey,
@@ -67,24 +69,6 @@ fn create_program_account_info<'a>(
     );
 }
 
-struct Resp<'a, T: AccountSerialize + AccountDeserialize + Owner + Clone> {
-    account: Account<'a, T>,
-    info_key: Pubkey,
-}
-
-// fn create_account<'a, T: AccountSerialize + AccountDeserialize + Owner + Clone>() -> Resp<'a, T> {
-//     let info_key<'a> = Pubkey::default();
-//     let info_owner = Pubkey::default();
-//     let mut lamports = 1000;
-//     let mut buf: Vec<u8> = Vec::new();
-//     let zendao_info = create_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
-//     Resp {
-//         account: Account::<'a, T>::try_from_unchecked(&zendao_info).unwrap(),
-//         info_key
-//     }
-// }
-
-
 #[test]
 fn it_should_call_entry_generated_by_anchors_macro() {
     let program_id = solzen::ID;
@@ -107,10 +91,9 @@ fn it_should_call_entry_generated_by_anchors_macro() {
     let mut buf: Vec<u8> = Vec::new();
     writer.seek(SeekFrom::Start(0)).unwrap();
     writer.read_to_end(&mut buf).unwrap();
-    let mut final_data = data.try_to_vec().unwrap();
+    let mut final_data = Vec::from(data);
     println!("raw final_data = {:?}", final_data);
     final_data.append(&mut buf);
-    println!("{:?}", &final_data[4..]);
     let info_key = Pubkey::default();
     let info_owner = Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap();
 
@@ -154,56 +137,30 @@ fn it_should_call_entry_generated_by_anchors_macro() {
     let mut lamports = 1000;
     let program_info = create_program_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
     let accounts = &[zendao_info, validation_info, founder_info, program_info];
-    entry(&program_id, accounts, &final_data[4..]).unwrap();
+    entry(&program_id, accounts, &final_data).unwrap();
 }
 
 #[test]
 fn it_just_runs() {
-    let mut bumps = BTreeMap::new();
-    bumps.insert(String::from("k"), 1);
-    let info_key = Pubkey::default();
-    let info_owner = Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap();
-
-    let zd = Zendao {
-        token: Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap(),
-        min_balance: 1,
-        slug: String::from("slug"),
-    };
-
-    let mut buffer = Cursor::new(Vec::new());
-    zd.try_serialize(&mut buffer).unwrap();
-    let mut buf: Vec<u8> = Vec::new();
-    buffer.seek(SeekFrom::Start(0)).unwrap();
-    buffer.read_to_end(&mut buf).unwrap();
+    let test_ctx = factory::create_test_context();
+    let mut data: Vec<u8> = Vec::new();
     let mut lamports = 1000;
-    let zendao_info = create_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
-    let zendao = Account::<Zendao>::try_from_unchecked(&zendao_info).unwrap();
+    let zendao = factory::create_zendao_account(&test_ctx, &mut lamports, &mut data);
 
     assert_eq!(zendao.min_balance, 1);
 
-    let validation_struct = Validation {
-        parent: Pubkey::default(),
-        child: Pubkey::default(),
-        timestamp: 1,
-    };
-
-    let mut buffer = Cursor::new(Vec::new());
-    validation_struct.try_serialize(&mut buffer).unwrap();
-    let mut buf: Vec<u8> = Vec::new();
-    buffer.seek(SeekFrom::Start(0)).unwrap();
-    buffer.read_to_end(&mut buf).unwrap();
+    let mut data: Vec<u8> = Vec::new();
     let mut lamports = 1000;
-    let validation_info = create_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
-    let validation = Account::<Validation>::try_from_unchecked(&validation_info).unwrap();
+    let validation = factory::create_validation_account(&test_ctx, &mut lamports, &mut data);
 
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
-    let founder_info = create_signer_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
+    let founder_info = create_signer_account_info(&test_ctx.info_key, &test_ctx.info_owner, &mut lamports, &mut buf);
     let founder = Signer::try_from(&founder_info).unwrap();
 
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
-    let program_info = create_program_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
+    let program_info = create_program_account_info(&test_ctx.info_key, &test_ctx.info_owner, &mut lamports, &mut buf);
     let system_program = Program::try_from(&program_info).unwrap();
     let mut init_dao = InitDAO {
         zendao,
@@ -216,7 +173,7 @@ fn it_just_runs() {
         program_id: &Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap(),
         accounts: &mut init_dao,
         remaining_accounts: &[],
-        bumps: bumps,
+        bumps: BTreeMap::new(),
     };
 
     assert_eq!(ctx.accounts.zendao.min_balance, 1);
