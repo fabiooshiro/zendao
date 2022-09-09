@@ -18,5 +18,6 @@ default = []
 [dependencies]
 anchor-lang = "0.25.0"
 anchor-spl = "0.25.0"
+sha2 = "0.10.5"
 spl-associated-token-account = "1.0.5"
 ctsi_sol = { path = "../ctsi_sol" }
