@@ -10,14 +10,38 @@ name = "solzen"
 
 [features]
 no-entrypoint = []
+
+# config do exemplo sysvar vindo do git@github.com:solana-labs/solana-program-library.git
+test-sbf = []
+
 no-idl = []
 no-log-ix-name = []
 cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.25.0"
-anchor-spl = "0.25.0"
+anchor-lang = "^0.25.0"
+anchor-spl = "^0.25.0"
+
+# sobreescrevendo para utilizar spl-token 3.5.0
+# https://doc.rust-lang.org/cargo/reference/overriding-dependencies.html
+# falhou miseravelmente pq subindo um minor quebrou a assinatura de um metodo :-(
+# anchor-lang = { path = "../../../../../anchor/lang" } 
+# anchor-spl = { path = "../../../../../anchor/spl" } 
 sha2 = "0.10.5"
 spl-associated-token-account = "1.0.5"
-ctsi_sol = { path = "../ctsi_sol" }
+#spl-token = "3.5.0"
+# ctsi_sol = { path = "../ctsi_sol" }
+
+[dev-dependencies]
+# config do exemplo sysvar vindo do git@github.com:solana-labs/solana-program-library.git
+# mas baixando para a versao compativel com o anchor
+# a versao fica no projeto do anchor
+# dentro do arquivo Cargo.toml tem uma linha com: solana-program = "~1.10.29"
+solana-program-test = "1.10.29"
+solana-sdk = "1.10.29"
+solana-program = "~1.10.29"
+
+# config do exemplo sysvar vindo do git@github.com:solana-labs/solana-program-library.git
+#[package.metadata.docs.rs]
+#targets = ["x86_64-unknown-linux-gnu"]
