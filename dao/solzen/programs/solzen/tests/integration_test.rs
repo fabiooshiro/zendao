@@ -54,7 +54,7 @@ fn it_should_call_entry_generated_by_anchors_macro() {
 
     let init = solzen::instruction::Initialize {
         token: Pubkey::default(),
-        min_balance: 10,
+        min_balance: 123,
         dao_slug: String::from("slug"),
     };
     let mut writer = Cursor::new(Vec::new());
@@ -116,6 +116,9 @@ fn it_should_call_entry_generated_by_anchors_macro() {
         factory::create_program_account_info(&solana_program_id, &solana_program_id, &mut lamports, &mut buf);
     let accounts = &[zendao_info, validation_info, founder_info, program_info];
     solzen::entry(&program_id, accounts, &final_data).unwrap();
+    let res = Account::<Zendao>::try_from_unchecked(&accounts[0]).unwrap();
+    assert_eq!(res.min_balance, 123);
+    assert_eq!(res.slug, "slug");
 }
 
 #[test]
