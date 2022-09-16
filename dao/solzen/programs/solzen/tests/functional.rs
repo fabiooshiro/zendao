@@ -10,14 +10,14 @@ use {
 };
 use std::io::{Cursor, SeekFrom, Seek, Read};
 
-use anchor_lang::{AnchorSerialize, prelude::Pubkey};
+use anchor_lang::{AnchorSerialize, prelude::{Pubkey, Rent, SolanaSysvar}};
 use sha2::{Sha256, Digest};
 use solana_program::stake_history::Epoch;
 use solana_sdk::account::Account;
 use solzen::entry;
 
 #[tokio::test]
-#[cfg(feature="test-bpf")]
+// #[cfg(feature="test-bpf")]
 async fn test_sysvar() {
     let program_id = solzen::ID;
     let mut program_test = ProgramTest::new(
@@ -53,7 +53,7 @@ async fn test_sysvar() {
     let result = hasher.finalize();
     println!("result = {:?}", &result[..8]);
     let data: &[u8] = &result[..8];
-
+    Rent::get();
     // parametros que vao na assinatura do initialize
     let init = solzen::instruction::Initialize {
         token: Pubkey::default(),

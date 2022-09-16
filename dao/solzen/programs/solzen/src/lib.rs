@@ -4,8 +4,10 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{CloseAccount, Mint, Token, TokenAccount, Transfer},
 };
-// use ctsi_sol::Clock;
+use ctsi_sol::Clock;
+use ctsi_sol::Rent;
 pub mod models;
+// pub mod macro_expanded;
 
 declare_id!("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv");
 
@@ -29,6 +31,7 @@ pub mod solzen {
     use super::*;
     
     pub fn initialize(ctx: Context<InitDAO>, token: Pubkey, min_balance: u64, dao_slug: String) -> Result<()> {
+        msg!("Initializing...");
         let dao = &mut ctx.accounts.zendao;
         let founder: &Signer = &ctx.accounts.founder;
         dao.token = token;

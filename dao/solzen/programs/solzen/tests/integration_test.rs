@@ -39,8 +39,10 @@ fn it_should_call_sysvar() {
 
 #[test]
 fn it_should_call_entry_generated_by_anchors_macro() {
-    let program_id = solzen::ID;
 
+    let program_id = solzen::ID;
+    let solana_program_id = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+    let dao_pubkey = Pubkey::from_str("58tPH4GsdSn5ehKszkcWK12S2rTBcG9GaMfKtkEZDBKt").unwrap();
     let mut hasher = Sha256::new();
     hasher.update(b"global:initialize");
     let result = hasher.finalize();
@@ -99,19 +101,20 @@ fn it_should_call_entry_generated_by_anchors_macro() {
     buffer.seek(SeekFrom::Start(0)).unwrap();
     buffer.read_to_end(&mut buf).unwrap();
     let mut lamports = 1000;
-    let zendao_info = factory::create_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
+    let zendao_info = factory::create_account_info(&dao_pubkey, &info_owner, &mut lamports, &mut buf);
 
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
     let founder_info =
         factory::create_signer_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
 
+    
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
     let program_info =
-        factory::create_program_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
+        factory::create_program_account_info(&solana_program_id, &solana_program_id, &mut lamports, &mut buf);
     let accounts = &[zendao_info, validation_info, founder_info, program_info];
-    entry(&program_id, accounts, &final_data).unwrap();
+    solzen::entry(&program_id, accounts, &final_data).unwrap();
 }
 
 #[test]
@@ -154,6 +157,7 @@ fn it_just_runs() {
     let dao_slug = String::from("new_slug");
     let result = initialize(ctx, token, min_balance, dao_slug);
     // ctx foi retirado da memoria nesse escopo
+    // assert_eq!(ctx.accounts.zendao.slug, "new_slug");
     match result {
         Ok(_) => println!("Ok"),
         Err(_) => panic!("Wowww"),
