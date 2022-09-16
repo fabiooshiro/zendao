@@ -24,7 +24,7 @@ pub fn create_account_info<'a>(
     return AccountInfo::new(
         key,
         false,
-        false,
+        true,
         lamports,
         info_data,
         owner,
@@ -79,7 +79,7 @@ pub fn create_signer_account_info<'a>(
     return AccountInfo::new(
         key,
         true,
-        false,
+        true,
         lamports,
         info_data,
         owner,

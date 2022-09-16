@@ -43,6 +43,7 @@ fn it_should_call_entry_generated_by_anchors_macro() {
     let program_id = solzen::ID;
     let solana_program_id = Pubkey::from_str("11111111111111111111111111111111").unwrap();
     let dao_pubkey = Pubkey::from_str("58tPH4GsdSn5ehKszkcWK12S2rTBcG9GaMfKtkEZDBKt").unwrap();
+    let validation_pubkey = Pubkey::from_str("86VPuJvVmpsr3GGGL2BhiUESvALS6xujKznBpNpBvYsj").unwrap();
     let mut hasher = Sha256::new();
     hasher.update(b"global:initialize");
     let result = hasher.finalize();
@@ -82,7 +83,7 @@ fn it_should_call_entry_generated_by_anchors_macro() {
         buffer.read_to_end(&mut validation_buf).unwrap();
 
         factory::create_account_info(
-            &info_key,
+            &validation_pubkey,
             &info_owner,
             &mut validation_lamports,
             &mut validation_buf,
