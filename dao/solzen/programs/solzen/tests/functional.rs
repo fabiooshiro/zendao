@@ -1,7 +1,7 @@
 use {
     solana_program::{
         instruction::{AccountMeta, Instruction},
-        pubkey::Pubkey,
+        // pubkey::Pubkey,
         sysvar::{self},
     },
     solana_program_test::*,
@@ -10,18 +10,38 @@ use {
 };
 use std::io::{Cursor, SeekFrom, Seek, Read};
 
-use anchor_lang::AnchorSerialize;
+use anchor_lang::{AnchorSerialize, prelude::Pubkey};
 use sha2::{Sha256, Digest};
+use solana_program::stake_history::Epoch;
+use solana_sdk::account::Account;
 use solzen::entry;
 
 #[tokio::test]
+#[cfg(feature="test-bpf")]
 async fn test_sysvar() {
     let program_id = solzen::ID;
-    let program_test = ProgramTest::new(
+    let mut program_test = ProgramTest::new(
         "spl_example_sysvar",
         program_id,
         processor!(entry),
     );
+
+    // let payer_pubkey = payer.pubkey();
+    // let vault_bump_seed = 0u8;
+    // let vault_seeds = &[b"dao".as_ref(), solzen::name_seed(&init.dao_slug).as_ref(), &[vault_bump_seed]];
+    // let dao_pda = Pubkey::create_program_address(vault_seeds, &program_id).unwrap();
+    let dao_pubkey = Pubkey::from_str("58tPH4GsdSn5ehKszkcWK12S2rTBcG9GaMfKtkEZDBKt").unwrap();
+    let dao_data = Vec::new();
+    let account = Account {
+        lamports: 1234567,
+        owner: program_id,
+        data: dao_data,
+        executable: false,
+        rent_epoch: Epoch::default(),
+    };
+    // program_test.add_account(dao_pubkey, account);
+    // assert_eq!(dao_pubkey, dao_pda);
+
     // program_test.add_account(address, account);
     let (mut banks_client, payer, recent_blockhash) = 
     program_test
@@ -54,8 +74,10 @@ async fn test_sysvar() {
             program_id,
             &final_data,
             vec![
-                AccountMeta::new(sysvar::clock::id(), false),
+                AccountMeta::new(dao_pubkey, false),
                 AccountMeta::new(sysvar::rent::id(), false),
+                AccountMeta::new(payer.pubkey(), false),
+                AccountMeta::new(Pubkey::from_str("11111111111111111111111111111111").unwrap(), false),
             ],
         )],
         Some(&payer.pubkey()),

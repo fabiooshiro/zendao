@@ -114,7 +114,7 @@ pub mod solzen {
     }
 }
 
-fn name_seed(name: &str) -> &[u8] {
+pub fn name_seed(name: &str) -> &[u8] {
     let b = name.as_bytes();
     if b.len() > 32 { &b[0..32] } else { b }
 }

@@ -92,7 +92,7 @@ pub fn create_signer<'a>(
     test_ctx: &'a TestContext,
     lamports: &'a mut u64,
     data: &'a mut Vec<u8>,
-) -> Signer {
+) -> Signer<'a> {
     let founder_info =
         create_signer_account_info(&test_ctx.info_key, &test_ctx.info_owner, lamports, data);
     let founder = Signer::try_from(&founder_info).unwrap();
@@ -121,7 +121,7 @@ pub fn create_system_program<'a>(
     test_ctx: &'a TestContext,
     lamports: &'a mut u64,
     data: &'a mut Vec<u8>,
-) -> Program<System> {
+) -> Program<'a, System> {
     let program_info = create_program_account_info(
         &test_ctx.info_key,
         &test_ctx.info_owner,
