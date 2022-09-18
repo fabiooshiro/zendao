@@ -1,12 +1,17 @@
 use anchor_lang::solana_program::example_mocks::solana_sdk::transaction::Transaction;
 use anchor_lang::solana_program::instruction::Instruction;
+use bincode::{deserialize, serialize};
+use solana_perf::packet::{Meta, Packet, PacketBatch, PacketFlags};
+use solana_perf::recycler::Recycler;
+use solana_perf::sigverify::{self, TxOffset};
 use solana_program::sysvar::{self};
+use solana_sdk::bs58;
 use std::io::{Cursor, Read, Seek, SeekFrom};
+use std::net::{IpAddr, Ipv6Addr};
 use std::{collections::BTreeMap, str::FromStr};
 
 use anchor_lang::{prelude::*, solana_program};
 use sha2::{Digest, Sha256};
-use solzen::entry;
 use solzen::{
     self,
     models::{Validation, Zendao},
@@ -14,6 +19,30 @@ use solzen::{
     InitDAO,
 };
 pub mod factory;
+
+#[test]
+fn it_should_deserialize_transaction_from_base64_encoded_sent_through_rpc_from_frontend() {
+    let encoded64 = "AT5FiVtGESwkZI4CSYS3rB1BUKhO/SsuWkdI7U0a+EfOYhWoUFcpPgFDhCa9n6lZP4j/JurMY90/6/PY/XoErA8BAAIFaLXcC6Cywbwm74mPOjeCatSweRxlWr35eTLpIEf+WOE9c+ndk0/3nYBv5IL0AYCdTFv3mclqsrWNe8g7zMKW788smY3PSJVY8mgIeGmx7C+RnzWnx1yuebvR7LVvAwu3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUy4Hb7mSWFQTbYEIchzRyZVRLl4KLQEuaiG+hVkKvUa4D7xZK8QCXLSfAn7UqVg66AIgQ0PFcKgpkbDEnLEQFAQQEAQIAAzivr20fDZib7awePxMEdMwUsv7P4+23SFy4GOfkeXuwWPj1MMZHa6Xu6AMAAAAAAAAEAAAAc2x1Zw==";
+    let decoded = base64::decode(encoded64).unwrap();
+    let tx: solana_sdk::transaction::Transaction = deserialize(&decoded).unwrap();
+    println!("tx = {:?}", tx);
+    assert_eq!(tx.signatures.len(), 1);
+    assert_eq!(tx.message.account_keys.len(), 5);
+}
+
+#[test]
+fn it_should_deserialize_transaction_from_base64_and_call_anchors_entry() {
+    let encoded64 = "AT5FiVtGESwkZI4CSYS3rB1BUKhO/SsuWkdI7U0a+EfOYhWoUFcpPgFDhCa9n6lZP4j/JurMY90/6/PY/XoErA8BAAIFaLXcC6Cywbwm74mPOjeCatSweRxlWr35eTLpIEf+WOE9c+ndk0/3nYBv5IL0AYCdTFv3mclqsrWNe8g7zMKW788smY3PSJVY8mgIeGmx7C+RnzWnx1yuebvR7LVvAwu3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUy4Hb7mSWFQTbYEIchzRyZVRLl4KLQEuaiG+hVkKvUa4D7xZK8QCXLSfAn7UqVg66AIgQ0PFcKgpkbDEnLEQFAQQEAQIAAzivr20fDZib7awePxMEdMwUsv7P4+23SFy4GOfkeXuwWPj1MMZHa6Xu6AMAAAAAAAAEAAAAc2x1Zw==";
+    let decoded = base64::decode(encoded64).unwrap();
+    let tx: solana_sdk::transaction::Transaction = deserialize(&decoded).unwrap();
+
+    let program_id = solzen::ID;
+    let final_data = tx.message_data();
+
+    // TODO: load account info from drive...
+    let accounts = &[];
+    solzen::entry(&program_id, accounts, &final_data).unwrap();
+}
 
 #[test]
 fn it_should_call_sysvar() {
@@ -38,22 +67,92 @@ fn it_should_call_sysvar() {
 }
 
 #[test]
-fn it_should_call_entry_generated_by_anchors_macro() {
+fn it_should_read_offset() {
+    // just learning, look at it_should_deserialize_transaction_from_base64_encoded_sent_through_rpc_from_frontend
+    let mut packets = Vec::new();
+    let encoded64 = "AT5FiVtGESwkZI4CSYS3rB1BUKhO/SsuWkdI7U0a+EfOYhWoUFcpPgFDhCa9n6lZP4j/JurMY90/6/PY/XoErA8BAAIFaLXcC6Cywbwm74mPOjeCatSweRxlWr35eTLpIEf+WOE9c+ndk0/3nYBv5IL0AYCdTFv3mclqsrWNe8g7zMKW788smY3PSJVY8mgIeGmx7C+RnzWnx1yuebvR7LVvAwu3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUy4Hb7mSWFQTbYEIchzRyZVRLl4KLQEuaiG+hVkKvUa4D7xZK8QCXLSfAn7UqVg66AIgQ0PFcKgpkbDEnLEQFAQQEAQIAAzivr20fDZib7awePxMEdMwUsv7P4+23SFy4GOfkeXuwWPj1MMZHa6Xu6AMAAAAAAAAEAAAAc2x1Zw==";
+    let decoded = base64::decode(encoded64).unwrap();
+    let meta = Meta {
+        size: decoded.len(),
+        addr: IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1)),
+        port: 403,
+        flags: PacketFlags::FORWARDED,
+        sender_stake: 1,
+    };
+    let mut data: [u8; 1232] = [0; 1232];
+    for n in 0..decoded.len() {
+        data[n] = decoded[n];
+    }
+    let packet = Packet::new(data, meta);
+    packets.push(packet);
+    let packet_batch = PacketBatch::new(packets);
+    let mut batches = [packet_batch];
+    let recicler = Recycler::<TxOffset>::default();
+    let (
+        signature_offsets,
+        pubkey_offsets,
+        msg_start_offsets,
+        msg_sizes,
+        offsets,
+    ) = sigverify::generate_offsets(&mut batches, &recicler, false);
+    println!("signature_offsets {:?}", signature_offsets);
+    println!("pubkey_offsets {:?}", pubkey_offsets);
+    println!("msg_start_offsets {:?}", msg_start_offsets);
+    println!("msg_sizes {:?}", msg_sizes);
+    println!("offsets {:?}", offsets);
+}
 
+#[test]
+fn it_should_deserialize_the_arguments() {
+    // just learning, look at it_should_deserialize_transaction_from_base64_encoded_sent_through_rpc_from_frontend
+    // fontend's sample data
+    let encoded64 = "AT5FiVtGESwkZI4CSYS3rB1BUKhO/SsuWkdI7U0a+EfOYhWoUFcpPgFDhCa9n6lZP4j/JurMY90/6/PY/XoErA8BAAIFaLXcC6Cywbwm74mPOjeCatSweRxlWr35eTLpIEf+WOE9c+ndk0/3nYBv5IL0AYCdTFv3mclqsrWNe8g7zMKW788smY3PSJVY8mgIeGmx7C+RnzWnx1yuebvR7LVvAwu3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUy4Hb7mSWFQTbYEIchzRyZVRLl4KLQEuaiG+hVkKvUa4D7xZK8QCXLSfAn7UqVg66AIgQ0PFcKgpkbDEnLEQFAQQEAQIAAzivr20fDZib7awePxMEdMwUsv7P4+23SFy4GOfkeXuwWPj1MMZHa6Xu6AMAAAAAAAAEAAAAc2x1Zw==";
+    let decoded = base64::decode(encoded64).unwrap();
+    println!("decoded.len = {}", decoded.len());
+    let (signatures_count, u16_size) =
+        solana_program::short_vec::decode_shortu16_len(&decoded).unwrap();
+    println!(
+        "signatures_count = {}; u16_size = {}",
+        signatures_count, u16_size
+    );
+    let end_signature = u16_size + 64;
+    let first_signature: Vec<u8> = decoded[u16_size..end_signature].to_vec();
+    println!("signature = {:?}", first_signature);
+    println!(
+        "signature = {:?}",
+        bs58::encode(&first_signature).into_string()
+    );
+    assert_eq!(
+        "2FDDFY8z5h1nz12vJGgQekjf8qqMXxKED4ANxhS2uqdDSRhGio4FvyreKc6eCQD5SUAhgrACEQiLkbqfox7sFFUi",
+        bs58::encode(&first_signature).into_string()
+    );
+    // https://explorer.solana.com/tx/2FDDFY8z5h1nz12vJGgQekjf8qqMXxKED4ANxhS2uqdDSRhGio4FvyreKc6eCQD5SUAhgrACEQiLkbqfox7sFFUi?cluster=testnet
+
+    // let end_header = end_signature + 3;
+    // let header = decoded[end_signature..end_header].to_vec();
+    // println!("message header = {:?}", header);
+    // let required_signatures = header[0];
+    // let read_only_addresses = header[1];
+    // let read_only_addr_nsig = header[2];
+}
+
+#[test]
+fn it_should_call_entry_generated_by_anchors_macro() {
     let program_id = solzen::ID;
     let solana_program_id = Pubkey::from_str("11111111111111111111111111111111").unwrap();
     let dao_pubkey = Pubkey::from_str("58tPH4GsdSn5ehKszkcWK12S2rTBcG9GaMfKtkEZDBKt").unwrap();
-    let validation_pubkey = Pubkey::from_str("86VPuJvVmpsr3GGGL2BhiUESvALS6xujKznBpNpBvYsj").unwrap();
+    let validation_pubkey =
+        Pubkey::from_str("86VPuJvVmpsr3GGGL2BhiUESvALS6xujKznBpNpBvYsj").unwrap();
     let mut hasher = Sha256::new();
     hasher.update(b"global:initialize");
     let result = hasher.finalize();
-    println!("result = {:?}", &result[..8]);
+    println!("method dispatch's sighash = {:?}", &result[..8]);
 
     let data: &[u8] = &result[..8];
     println!("data = {:?}", data);
 
     let init = solzen::instruction::Initialize {
-        token: Pubkey::default(),
+        token: Pubkey::from_str("CasshNb6PacBzSwbd5gw8uqoQEjcWxaQ9u9byFApShwT").unwrap(),
         min_balance: 123,
         dao_slug: String::from("slug"),
     };
@@ -63,7 +162,8 @@ fn it_should_call_entry_generated_by_anchors_macro() {
     writer.seek(SeekFrom::Start(0)).unwrap();
     writer.read_to_end(&mut buf).unwrap();
     let mut final_data = Vec::from(data);
-    println!("raw final_data = {:?}", final_data);
+    println!("token pubkey = {:?}", init.token);
+    println!("Initialize params = {:?}", buf);
     final_data.append(&mut buf);
     let info_key = Pubkey::default();
     let info_owner = Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap();
@@ -102,18 +202,22 @@ fn it_should_call_entry_generated_by_anchors_macro() {
     buffer.seek(SeekFrom::Start(0)).unwrap();
     buffer.read_to_end(&mut buf).unwrap();
     let mut lamports = 1000;
-    let zendao_info = factory::create_account_info(&dao_pubkey, &info_owner, &mut lamports, &mut buf);
+    let zendao_info =
+        factory::create_account_info(&dao_pubkey, &info_owner, &mut lamports, &mut buf);
 
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
     let founder_info =
         factory::create_signer_account_info(&info_key, &info_owner, &mut lamports, &mut buf);
 
-    
     let mut buf: Vec<u8> = Vec::new();
     let mut lamports = 1000;
-    let program_info =
-        factory::create_program_account_info(&solana_program_id, &solana_program_id, &mut lamports, &mut buf);
+    let program_info = factory::create_program_account_info(
+        &solana_program_id,
+        &solana_program_id,
+        &mut lamports,
+        &mut buf,
+    );
     let accounts = &[zendao_info, validation_info, founder_info, program_info];
     solzen::entry(&program_id, accounts, &final_data).unwrap();
     let res = Account::<Zendao>::try_from_unchecked(&accounts[0]).unwrap();
