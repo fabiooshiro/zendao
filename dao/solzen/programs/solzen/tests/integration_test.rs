@@ -22,10 +22,19 @@ use solzen::{
 };
 pub mod factory;
 
+fn my_method_with_error() -> (u64, String) -> {
+    (0, String::from("MyError"))
+}
+
+fn my_method_success() -> (u64, String) -> {
+    (32, String::from(""))
+}
+
 fn load_account_info(_pubkey: &Pubkey) -> (Vec<u8>, u64, Pubkey) {
     let lamports = 1000;
     let info_data = Vec::new();
     let owner = Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap();
+
     (info_data, lamports, owner)
 }
 
@@ -55,6 +64,7 @@ fn it_should_deserialize_transaction_from_base64_and_call_anchors_entry() {
         params.push((a, b, c, pubkey));
     }
     for param in params.iter_mut() {
+        let key = Pubkey::default();
         accounts.push(AccountInfo {
             key: &param.3,
             is_signer: true,
