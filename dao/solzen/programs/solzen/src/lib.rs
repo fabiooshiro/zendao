@@ -1,9 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_program;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token::{CloseAccount, Mint, Token, TokenAccount, Transfer},
-};
+use anchor_spl::token::TokenAccount;
 use ctsi_sol::Clock;
 use ctsi_sol::Rent;
 pub mod models;
@@ -29,8 +26,13 @@ pub enum MyError {
 #[program]
 pub mod solzen {
     use super::*;
-    
-    pub fn initialize(ctx: Context<InitDAO>, token: Pubkey, min_balance: u64, dao_slug: String) -> Result<()> {
+
+    pub fn initialize(
+        ctx: Context<InitDAO>,
+        token: Pubkey,
+        min_balance: u64,
+        dao_slug: String,
+    ) -> Result<()> {
         msg!("Initializing...");
         let dao = &mut ctx.accounts.zendao;
         let founder: &Signer = &ctx.accounts.founder;
@@ -66,7 +68,12 @@ pub mod solzen {
         }
         let telegram_user = &mut ctx.accounts.telegram_user;
         if ctx.accounts.token_account.amount < ctx.accounts.zendao.min_balance {
-            msg!("token owner = {:?} amount = {:?} min = {:?}", token_account.owner, ctx.accounts.token_account.amount, ctx.accounts.zendao.min_balance);
+            msg!(
+                "token owner = {:?} amount = {:?} min = {:?}",
+                token_account.owner,
+                ctx.accounts.token_account.amount,
+                ctx.accounts.zendao.min_balance
+            );
             return Err(error!(MyError::InsuficientAmount));
         }
         telegram_user.pubkey = *ctx.accounts.signer.key;
@@ -119,7 +126,11 @@ pub mod solzen {
 
 pub fn name_seed(name: &str) -> &[u8] {
     let b = name.as_bytes();
-    if b.len() > 32 { &b[0..32] } else { b }
+    if b.len() > 32 {
+        &b[0..32]
+    } else {
+        b
+    }
 }
 #[derive(Accounts)]
 // Atencao isso eh posicional
