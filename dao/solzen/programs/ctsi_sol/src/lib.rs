@@ -1,4 +1,5 @@
-use anchor_lang::prelude::*;
+use anchor_lang::prelude::Result;
+use anchor_lang::prelude::ProgramError;
 
 pub struct Clock {
     pub unix_timestamp: i64,

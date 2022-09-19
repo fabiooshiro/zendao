@@ -4,8 +4,8 @@ use anchor_spl::{
     associated_token::AssociatedToken,
     token::{CloseAccount, Mint, Token, TokenAccount, Transfer},
 };
-// use ctsi_sol::Clock;
-// use ctsi_sol::Rent;
+use ctsi_sol::Clock;
+use ctsi_sol::Rent;
 pub mod models;
 // pub mod macro_expanded;
 

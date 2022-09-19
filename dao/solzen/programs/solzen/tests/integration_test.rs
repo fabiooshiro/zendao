@@ -6,8 +6,10 @@ use solana_perf::recycler::Recycler;
 use solana_perf::sigverify::{self, TxOffset};
 use solana_program::sysvar::{self};
 use solana_sdk::bs58;
+use std::cell::RefCell;
 use std::io::{Cursor, Read, Seek, SeekFrom};
 use std::net::{IpAddr, Ipv6Addr};
+use std::rc::Rc;
 use std::{collections::BTreeMap, str::FromStr};
 
 use anchor_lang::{prelude::*, solana_program};
@@ -19,6 +21,13 @@ use solzen::{
     InitDAO,
 };
 pub mod factory;
+
+fn load_account_info(_pubkey: &Pubkey) -> (Vec<u8>, u64, Pubkey) {
+    let lamports = 1000;
+    let info_data = Vec::new();
+    let owner = Pubkey::from_str("2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv").unwrap();
+    (info_data, lamports, owner)
+}
 
 #[test]
 fn it_should_deserialize_transaction_from_base64_encoded_sent_through_rpc_from_frontend() {
@@ -37,11 +46,30 @@ fn it_should_deserialize_transaction_from_base64_and_call_anchors_entry() {
     let tx: solana_sdk::transaction::Transaction = deserialize(&decoded).unwrap();
 
     let program_id = solzen::ID;
-    let final_data = tx.message_data();
+    let first = &tx.message.instructions[0];
+    
+    let mut accounts = Vec::new();
+    let mut params = Vec::new();
+    for pubkey in tx.message.account_keys.iter() {
+        let (a, b, c) = load_account_info(&pubkey);
+        params.push((a, b, c, pubkey));
+    }
+    for param in params.iter_mut() {
+        accounts.push(AccountInfo {
+            key: &param.3,
+            is_signer: true,
+            is_writable: true,
+            lamports: Rc::new(RefCell::new(&mut param.1)),
+            data: Rc::new(RefCell::new(&mut param.0)),
+            owner: &param.2,
+            executable: true,
+            rent_epoch: 1,
+        });
+    }
+    println!("accounts indexes {:?}", first.accounts);
+    println!("method dispatch's sighash = {:?}", &first.data[..8]);
 
-    // TODO: load account info from drive...
-    let accounts = &[];
-    solzen::entry(&program_id, accounts, &final_data).unwrap();
+    solzen::entry(&program_id, &accounts, &first.data).unwrap();
 }
 
 #[test]
@@ -88,13 +116,8 @@ fn it_should_read_offset() {
     let packet_batch = PacketBatch::new(packets);
     let mut batches = [packet_batch];
     let recicler = Recycler::<TxOffset>::default();
-    let (
-        signature_offsets,
-        pubkey_offsets,
-        msg_start_offsets,
-        msg_sizes,
-        offsets,
-    ) = sigverify::generate_offsets(&mut batches, &recicler, false);
+    let (signature_offsets, pubkey_offsets, msg_start_offsets, msg_sizes, offsets) =
+        sigverify::generate_offsets(&mut batches, &recicler, false);
     println!("signature_offsets {:?}", signature_offsets);
     println!("pubkey_offsets {:?}", pubkey_offsets);
     println!("msg_start_offsets {:?}", msg_start_offsets);
@@ -138,6 +161,7 @@ fn it_should_deserialize_the_arguments() {
 
 #[test]
 fn it_should_call_entry_generated_by_anchors_macro() {
+    // working sample
     let program_id = solzen::ID;
     let solana_program_id = Pubkey::from_str("11111111111111111111111111111111").unwrap();
     let dao_pubkey = Pubkey::from_str("58tPH4GsdSn5ehKszkcWK12S2rTBcG9GaMfKtkEZDBKt").unwrap();
