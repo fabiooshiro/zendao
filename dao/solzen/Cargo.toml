@@ -3,3 +3,4 @@ members = [
     "programs/*"
 ]
 resolver = "2"
+exclude = ["programs/ctsi_sol"]

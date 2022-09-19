@@ -8,7 +8,8 @@ url = "https://anchor.projectserum.com"
 
 [provider]
 # cluster = "localnet"
-cluster = "devnet"
+# cluster = "devnet"
+cluster = "testnet"
 wallet = "/Users/oshiro/.config/solana/id.json"
 
 [scripts]
