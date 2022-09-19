@@ -1,6 +1,6 @@
 use anchor_lang::solana_program::example_mocks::solana_sdk::transaction::Transaction;
 use anchor_lang::solana_program::instruction::Instruction;
-use bincode::{deserialize, serialize};
+use bincode::deserialize;
 use solana_perf::packet::{Meta, Packet, PacketBatch, PacketFlags};
 use solana_perf::recycler::Recycler;
 use solana_perf::sigverify::{self, TxOffset};
@@ -47,7 +47,7 @@ fn it_should_deserialize_transaction_from_base64_and_call_anchors_entry() {
 
     let program_id = solzen::ID;
     let first = &tx.message.instructions[0];
-    
+
     let mut accounts = Vec::new();
     let mut params = Vec::new();
     for pubkey in tx.message.account_keys.iter() {
@@ -76,7 +76,7 @@ fn it_should_deserialize_transaction_from_base64_and_call_anchors_entry() {
 fn it_should_call_sysvar() {
     let program_id = Pubkey::from_str("Sysvar1111111111111111111111111111111111111").unwrap();
 
-    let mut transaction = Transaction::new_with_payer(
+    let transaction = Transaction::new_with_payer(
         &[Instruction::new_with_bincode(
             program_id,
             &(),
