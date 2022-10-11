@@ -7,9 +7,9 @@ solzen = "2QB8wEBJ8jjMQuZPvj3jaZP7JJb5j21u4xbxTnwsZRfv"
 url = "https://anchor.projectserum.com"
 
 [provider]
-# cluster = "localnet"
+cluster = "localnet"
 # cluster = "devnet"
-cluster = "testnet"
+# cluster = "testnet"
 wallet = "/Users/oshiro/.config/solana/id.json"
 
 [scripts]

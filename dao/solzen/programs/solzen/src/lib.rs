@@ -1,8 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_program;
+use anchor_spl::token;
+use anchor_spl::token::Mint;
 use anchor_spl::token::TokenAccount;
-use ctsi_sol::Clock;
-use ctsi_sol::Rent;
+// use ctsi_sol::Clock;
+// use ctsi_sol::Rent;
 pub mod models;
 // pub mod macro_expanded;
 
@@ -27,6 +29,8 @@ pub enum MyError {
 pub mod solzen {
     use super::*;
 
+    const WALLET_PDA_SEED: &[u8] = b"wallet";
+
     pub fn initialize(
         ctx: Context<InitDAO>,
         token: Pubkey,
@@ -43,6 +47,42 @@ pub mod solzen {
         validation.child = *founder.key;
         let clock: Clock = Clock::get().unwrap();
         validation.timestamp = clock.unix_timestamp;
+        Ok(())
+    }
+
+    pub fn init_wallet(ctx: Context<InitWallet>) -> Result<()> {
+
+        // take the ownership of this TokenAccount
+        let cpi_accounts = anchor_spl::token::SetAuthority {
+            account_or_mint: ctx.accounts.escrow_wallet.to_account_info(),
+            current_authority: ctx.accounts.user_sending.to_account_info(),
+        };
+        let cpi_context = CpiContext::new(ctx.accounts.token_program.clone(), cpi_accounts);
+        let (vault_authority, _bump) =
+            Pubkey::find_program_address(&[
+                WALLET_PDA_SEED,
+                ctx.accounts.mint.to_account_info().key.as_ref()
+            ], ctx.program_id);
+        anchor_spl::token::set_authority(
+            cpi_context,
+            anchor_spl::token::spl_token::instruction::AuthorityType::AccountOwner,
+            Some(vault_authority),
+        )?;
+        Ok(())
+    }
+
+    pub fn update(
+        ctx: Context<UpdateDAO>,
+        token: Pubkey,
+        min_balance: u64,
+    ) -> Result<()> {
+        msg!("Updating...");
+        // TODO: we need to check the founder...
+        let founder: &Signer = &ctx.accounts.founder;
+
+        let dao = &mut ctx.accounts.zendao;
+        dao.token = token;
+        dao.min_balance = min_balance;
         Ok(())
     }
 
@@ -203,6 +243,50 @@ pub struct ValidateTelegramUser<'info> {
 
     #[account(mut)]
     pub signer: Signer<'info>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+}
+
+
+#[derive(Accounts)]
+pub struct InitWallet<'info> {
+
+    #[account(
+        init,
+        payer = user_sending,
+        seeds=[
+            b"wallet".as_ref(),
+            mint.key().as_ref()
+        ],
+        bump,
+        token::mint=mint,
+        token::authority=user_sending,
+    )]
+    escrow_wallet: Account<'info, TokenAccount>,
+
+    // Users and accounts in the system
+    #[account(mut)]
+    user_sending: Signer<'info>, // Alice
+    mint: Account<'info, Mint>,  // USDC
+
+    /// CHECK: We already know its address and that it's executable
+    #[account(executable, constraint = token_program.key == &token::ID)]
+    pub token_program: AccountInfo<'info>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+
+    rent: Sysvar<'info, Rent>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateDAO<'info> {
+    #[account(mut)]
+    pub zendao: Account<'info, models::Zendao>,
+
+    #[account(mut)]
+    pub founder: Signer<'info>,
 
     #[account(address = system_program::ID)]
     pub system_program: Program<'info, System>,
