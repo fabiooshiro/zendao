@@ -1,8 +1,8 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::system_program;
 use anchor_spl::token::TokenAccount;
-use ctsi_sol::Clock;
-use ctsi_sol::Rent;
+// use ctsi_sol::Clock;
+// use ctsi_sol::Rent;
 pub mod models;
 // pub mod macro_expanded;
 
@@ -43,6 +43,21 @@ pub mod solzen {
         validation.child = *founder.key;
         let clock: Clock = Clock::get().unwrap();
         validation.timestamp = clock.unix_timestamp;
+        Ok(())
+    }
+
+    pub fn update(
+        ctx: Context<UpdateDAO>,
+        token: Pubkey,
+        min_balance: u64,
+    ) -> Result<()> {
+        msg!("Updating...");
+        // TODO: we need to check the founder...
+        let founder: &Signer = &ctx.accounts.founder;
+
+        let dao = &mut ctx.accounts.zendao;
+        dao.token = token;
+        dao.min_balance = min_balance;
         Ok(())
     }
 
@@ -145,6 +160,18 @@ pub struct InitDAO<'info> {
     #[account(init, payer = founder, space = models::Validation::LEN,
         seeds = [b"child".as_ref(), founder.key.as_ref(), zendao.key().as_ref()], bump)]
     pub validation: Account<'info, models::Validation>,
+
+    #[account(mut)]
+    pub founder: Signer<'info>,
+
+    #[account(address = system_program::ID)]
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateDAO<'info> {
+    #[account(mut)]
+    pub zendao: Account<'info, models::Zendao>,
 
     #[account(mut)]
     pub founder: Signer<'info>,
