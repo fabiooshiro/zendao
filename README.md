@@ -68,8 +68,17 @@ Responda perguntas do nosso bot anti bot
 
 ### Desembolso
 
-A DAO possui um valor dentro da `treasure`.
+A DAO possui um valor dentro da `treasury`.
 
 Qualquer pessoa pode fazer um pedido para ser pago em uma wallet, vulgo chave pública.
-Os pedidos são votados e caso a maioria % configurada vença e haja dinheiro suficiente dentro da `treasure` o valor solicitado é pago.
+Os pedidos são votados e caso a maioria % configurada vença e haja dinheiro suficiente dentro da `treasury` o valor solicitado é pago.
 
+## Onboarding
+
+O que é o bitcoin?
+
+O que é um par de chaves?
+
+O que é uma wallet?
+
+O que é uma DAO?
