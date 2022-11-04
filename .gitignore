@@ -1,5 +1,10 @@
 node_modules
 .parcel-cache
 /dao/front-app/dist
+
+# Mac file
 .DS_Store
+
+# Snyk
 .dccache
+
