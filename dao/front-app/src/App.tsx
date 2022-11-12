@@ -28,7 +28,7 @@ export const App: FC = () => {
     return (
         <Theme>
             <WalletContext>
-                <Router>
+                <Router basename='zendao'>
                     <Container
                         style={{ marginTop: '40px' }}
                         maxWidth='xl'
