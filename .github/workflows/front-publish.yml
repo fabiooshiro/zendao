@@ -17,8 +17,8 @@ jobs:
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: List files in the repository
         uses: actions/setup-node@v3
-          with:
-            node-version: '16.x'
+        with:
+          node-version: '16.x'
         run: |
           ls ${{ github.workspace }}
           cd ./dao/front-app
