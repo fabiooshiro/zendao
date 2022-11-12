@@ -23,5 +23,14 @@ jobs:
         run: |
           ls ${{ github.workspace }}
           cd ./dao/front-app
-          yarn --frozen-lockfile && yarn deploy:gh
+          yarn --frozen-lockfile
+          rm -rf ./dist
+          yarn build
+          cd ./dist
+          cp ./index.html ./404.html
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dao/front-app/dist
       - run: echo "🍏 This job's status is ${{ job.status }}."
